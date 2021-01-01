@@ -16,7 +16,6 @@ dataCases = table2array(casesTable);
 
 % Cases greece
 casesGreece = dataCases(54,:);
-casesGreece(1) = [];
 casesGreece(isnan(casesGreece)) = 0;
 
 % Plot Greece cases and 7-day moving average
