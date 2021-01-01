@@ -14,6 +14,11 @@ population = table2array(casesTable(:,3));
 casesTable(:,1:3) = [];
 dataCases = table2array(casesTable);
 
+% Dataset Deaths
+deathsTable = readtable('Covid19Deaths.xlsx','basic',true);
+deathsTable(:,1:3) = [];
+dataDeaths = table2array(deathsTable);
+
 % Cases greece
 casesGreece = dataCases(54,:);
 casesGreece(isnan(casesGreece)) = 0;
@@ -28,6 +33,7 @@ plot(1:length(casesGreece),movmean(casesGreece,7));
 % Save names and cases in arrays
 europeCountriesNames = {40};
 europeCountriesCases = zeros(40,348);
+europeCountriesDeaths = zeros(40,348);
 j = 1;
 for i=1:size(dataCases,1)
     if (labels(i,2) == "Europe")
@@ -37,6 +43,10 @@ for i=1:size(dataCases,1)
         nan = isnan(europeCountriesCases(j,:));
         europeCountriesCases(j,nan) = 0;
         
+        europeCountriesDeaths(j,:) = dataDeaths(i,:);
+        nan = isnan(europeCountriesDeaths(j,:));
+        europeCountriesDeaths(j,nan) = 0;
+        
         j = j+1;
     end
 end
@@ -45,5 +55,9 @@ end
 for i = 1:size(europeCountriesNames,2)
     figure(i)
     plot(1:size(europeCountriesCases,2),europeCountriesCases(i,:));
+    title(europeCountriesNames(i));
+    
+    figure(i + 100)
+    plot(1:size(europeCountriesDeaths,2),europeCountriesDeaths(i,:));
     title(europeCountriesNames(i));
 end
