@@ -7,17 +7,14 @@ clear;
 % This script plots the cases for all the europian countries
 
 % Dataset Cases
-structCases = importdata("Covid19Confirmed.xlsx");
-labels = structCases.textdata;
-labels(1,:) = [];
-population = structCases.data(:,1);
-population(1) = [];
+casesTable = readtable('Covid19Confirmed.xlsx','basic',true);
+labels = table2cell(casesTable(:,1:2));
+population = table2array(casesTable(:,3));
+
+casesTable(:,1:3) = [];
+dataCases = table2array(casesTable);
 
 % Cases greece
-dataCases = structCases.data;
-dataCases(1,:) = [];
-dataCases(:,1) = [];
-
 casesGreece = dataCases(54,:);
 casesGreece(1) = [];
 casesGreece(isnan(casesGreece)) = 0;
