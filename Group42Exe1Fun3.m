@@ -31,14 +31,14 @@ function [cases,deaths,population] = Group42Exe1Fun3(countryName)
     
     if(~isempty(negativeCases))
         for i = negativeCases
-            avg = sum( cases(i-1:i+1) ) / 3;
+            avg = sum( cases(i-2:i+2) ) / 5;
             cases(i-1:i+1) = avg;
         end
     end
     
     if(~isempty(negativeDeaths))
         for i = negativeDeaths
-            avg = sum( cases(i-1:i+1) ) / 3;
+            avg = sum( cases(i-2:i+2) ) / 5;
             deaths(i-1:i+1) = avg;
         end
     end
