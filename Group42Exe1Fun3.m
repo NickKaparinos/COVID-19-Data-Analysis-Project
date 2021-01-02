@@ -1,6 +1,8 @@
 function [cases,deaths,population] = Group42Exe1Fun3(countryName)
     % Dataset Cases
+    warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
     casesTable = readtable('Covid19Confirmed.xlsx','basic',true);
+    % casesTable(1,:) = [];
     labels = table2cell(casesTable(:,1:2));
     populations = table2array(casesTable(:,3));
 

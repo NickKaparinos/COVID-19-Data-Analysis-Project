@@ -2,7 +2,7 @@ function [startSecondWave,endSecondWave] = Group42Exe1Fun2(cases)
     % This function is used to find the start and end of the second wave
     totalNumberOfCasesSecondWave = sum(cases(200:end));
     
-    thresholdCasesSecond = 0.0017*totalNumberOfCasesSecondWave;
+    thresholdCasesSecond = 0.0012*totalNumberOfCasesSecondWave;
     
     casesMovingAverage = movmean(cases(200:end),7);
     startFound = false;

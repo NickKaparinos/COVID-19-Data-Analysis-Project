@@ -2,7 +2,7 @@ function [startFirstWave,endFirstWave] = Group42Exe1Fun1(cases)
     % This function is used to find the start and end of the first wave
     totalNumberOfCasesFirstWave = sum(cases(1:200));
 
-    thresholdCasesFirst = 0.0025*totalNumberOfCasesFirstWave;
+    thresholdCasesFirst = 0.0019485*totalNumberOfCasesFirstWave;
 
     % Find 1st wave
     casesMovingAverage = movmean(cases,7);
