@@ -49,7 +49,7 @@ for i=1:size(dataCases,1)
     end
 end
 
-selectedCountriesID = [3,6,12,13,16,17,19,20,25,27,40];
+selectedCountriesID = [14,18,3,6,13,14,16,17,18,19,20,25,40];
 
 % Fix negative values
 for i = selectedCountriesID
@@ -58,14 +58,14 @@ for i = selectedCountriesID
     
     if(~isempty(negativeCases))
         for j = negativeCases
-            avg = sum( europeCountriesCases(i,j-1:j+1) ) / 3;
+            avg = sum( europeCountriesCases(i,j-2:j+2) ) / 5;
             europeCountriesCases(i,j-1:j+1) = avg;
         end
     end
     
     if(~isempty(negativeDeaths))
         for j = negativeDeaths
-            avg = sum( europeCountriesDeaths(i,j-1:j+1) ) / 3;
+            avg = sum( europeCountriesDeaths(i,j-2:j+2) ) / 5;
             europeCountriesDeaths(i,j-1:j+1) = avg;
         end
     end
@@ -85,10 +85,10 @@ for i = 1:size(europeCountriesNames,2)
         
         % Thresholds
         % Auto pou elega limit
-        thresholdCasesFirst = 0.00225*totalNumberOfCasesFirstWave;
-        thresholdDeathsFirst = 0.0015*totalNumberOfDeathsFirstWave;
+        thresholdCasesFirst = 0.0019485*totalNumberOfCasesFirstWave;
+        thresholdDeathsFirst = 0.00125*totalNumberOfDeathsFirstWave;
         
-        thresholdCasesSecond = 0.0017*totalNumberOfCasesSecondWave;
+        thresholdCasesSecond = 0.0012*totalNumberOfCasesSecondWave;
         thresholdDeathsSecond = 0.0015*totalNumberOfDeathsSecondWave;
         
         % Find 1st wave for cases
@@ -150,12 +150,12 @@ for i = 1:size(europeCountriesNames,2)
         % [Start of second wave, end of second wave]
         % Ta ekane se function opw ta thelei kai to upologizv kai me to
         % function gia epalitheush
-        [s1,e1] = Group42Exe1Fun1(europeCountriesCases(i,1:end));
-        [s2,e2] = Group42Exe1Fun2(europeCountriesCases(i,1:end));
+        [s1,e1] = Group21Exe1Fun1(europeCountriesCases(i,1:end));
+        [s2,e2] = Group21Exe1Fun2(europeCountriesCases(i,1:end));
         
         % Plot cases
         figure(i)
-        plot(1:size(europeCountriesCases,2),movmean(europeCountriesCases(i,1:end),7));
+        plot(1:size(europeCountriesCases,2),europeCountriesCases(i,1:end));
         
         % Plot thresholds
         xlimit = xlim;
@@ -167,14 +167,10 @@ for i = 1:size(europeCountriesNames,2)
         % An de blepw tis mple grammes, shmainei oti einai katw apo tis
         % grames xrwmatos magenta, dhladh h epalhtheysh peftei panw sta
         % kanonika ara komple
-        line([startCases,startCases],ylim,'Color','b')
-        line([endCases,endCases],ylim,'Color','b')
         line([s1,s1],ylim,'Color','m')
         line([e1,e1],ylim,'Color','m')
         
         % Plot start and end for the second wave
-        line([startCasesSecond,startCasesSecond],ylim,'Color','b')
-        line([endCasesSecond,endCasesSecond],ylim,'Color','b')
         line([s2,s2],ylim,'Color','m')
         line([e2,e2],ylim,'Color','m')
         
@@ -232,19 +228,15 @@ for i = 1:size(europeCountriesNames,2)
         if(~endFound)
             endDeathsSecond = size(europeCountriesDeaths,2);
         end
-        
         % Plot deaths
         figure(100+i)
-        plot(1:size(europeCountriesCases,2),movmean(europeCountriesDeaths(i,1:end),7));
+        plot(1:size(europeCountriesCases,2),europeCountriesDeaths(i,1:end));
         xlimit = xlim;
-        line([xlimit(1) 200],[thresholdDeathsFirst,thresholdDeathsFirst],'Color','r')
-        line([200 xlimit(2)],[thresholdDeathsSecond,thresholdDeathsSecond],'Color','r')
         line([200,200],ylim,'Color','g')
-        line([startDeaths,startDeaths],ylim,'Color','b')
-        line([endDeaths,endDeaths],ylim,'Color','b')
-        line([startDeathsSecond,startDeathsSecond],ylim,'Color','b')
-        line([endDeathsSecond,endDeathsSecond],ylim,'Color','b')
+        line([s1,s1],ylim,'Color','m')
+        line([e1,e1],ylim,'Color','m')
+        line([s2,s2],ylim,'Color','m')
+        line([e2,e2],ylim,'Color','m')
         title(europeCountriesNames(i) + " Deaths");
-
     end
 end

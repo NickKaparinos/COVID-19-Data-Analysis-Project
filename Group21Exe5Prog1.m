@@ -15,7 +15,7 @@ for i = 1:length(countryList)
     [cases,deaths,population] = Group21Exe1Fun3(countryList(i));
     countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
     
-    % Find the start and end of the first wave using Group42Exe1Fun1
+    % Find the start and end of the first wave using Group21Exe1Fun1
     [start1,end1] = Group21Exe1Fun1(cases);
     cases = cases(start1:end1)';
     deaths = deaths(start1:end1)';

@@ -19,7 +19,7 @@ optimalT = [0,5,6,6,13,5,0];
 % Metrics
 R2Array = zeros(length(countryList),3);
 AdjR2Array = zeros(length(countryList),3);
-RegressionType = {"Normal Linear Regression","Multiple Linear Regression","Stepwise Regression"};
+RegressionType = ["Normal Linear Regression","Multiple Linear Regression","Stepwise Regression"];
 stepwiseNumberOfVariables = zeros(length(countryList),1);
 
 for i = 1:length(countryList)
@@ -27,7 +27,7 @@ for i = 1:length(countryList)
     [cases,deaths,population] = Group21Exe1Fun3(countryList(i));
     countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
     
-    % Find the start and end of the first wave using Group42Exe1Fun1
+    % Find the start and end of the first wave using Group21Exe1Fun1
     [start1,end1] = Group21Exe1Fun1(cases);
     cases = cases(start1:end1)';
     deaths = deaths(start1:end1)';
@@ -94,7 +94,7 @@ for i = 1:length(countryList)
     hold on;
     plot(Y,repmat(2,1,length(Y)));
     hold on;
-    plot(Y,repmat(0,1,length(Y)));
+    plot(Y,zeros(1,length(Y)));
     hold on;
     plot(Y,repmat(-2,1,length(Y)));
     title(countryList(i) + " Diagnostic Plot: Full Linear Model");
@@ -105,12 +105,12 @@ for i = 1:length(countryList)
     j = j+1;
     
     % Step wise regression
-    [b,~,~,model,stats] = stepwisefit(Xinput,Y);
+    [b,~,~,model,stats] = stepwisefit(X,Y);
     b0 = stats.intercept;
     b = [b0; b(model)];
     k = length(b);
 
-    Ypred = [ones(length(Xinput),1) Xinput(:,model)]*b;
+    Ypred = [ones(length(X),1) X(:,model)]*b;
     YpredStep = Ypred;
     
     % Save R2 and adjR2
@@ -174,9 +174,12 @@ for i = 1:length(countryList)
     disp(countryList(i) + " results:")
     disp("Normal linear regression: R2 = " + R2Array(i,1) + ", Adjusted R2 = " + AdjR2Array(i,1) + ".")
     disp("Full linear regression: R2 = " + R2Array(i,2) + ", Adjusted R2 = " + AdjR2Array(i,2) + ".")
-    disp("Stepwise regression: Num of Variables kept = " + stepwiseNumberOfVariables(i) +", R2 = " + R2Array(i,1) + ", Adjusted R2 = " + AdjR2Array(i,1) + ".")
+    disp("Stepwise regression: Num of Variables kept = " + stepwiseNumberOfVariables(i) +", R2 = " + R2Array(i,3) + ", Adjusted R2 = " + AdjR2Array(i,3) + ".")
     [~,R2SortedIdx] = sort(R2Array(i,:),'descend');
     [~,AdjR2SortedIdx] = sort(AdjR2Array(i,:),'descend');
+    if( countryList(i) == "France")
+       fet = 5; 
+    end
     disp("Best regression type based on R2: " + RegressionType(R2SortedIdx(1)) );
     disp("Best regression type based on Adjusted R2: " + RegressionType(AdjR2SortedIdx(1)) + newline );
     
