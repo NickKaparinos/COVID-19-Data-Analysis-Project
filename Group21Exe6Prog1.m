@@ -48,7 +48,7 @@ for i = 1:length(countryList)
     AdjR2Array(i,1) = regressionModel.Rsquared.Adjusted;
     
     f = figure(i);
-    f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 screens
+    f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
     j = 1;                                                  % Otherwise comment line 51 to return to defaults
     % Diagnostic plot of standardised error
     ei_standard = (Y - Ypred)/regressionModel.RMSE;
@@ -136,8 +136,9 @@ for i = 1:length(countryList)
     xlabel("Y")
     ylabel("Standard Error");
     
-    % Plot all 3 regressions on the same plot
-    figure(100+i);
+    f = figure(100+i);
+    f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
+    subplot(3,1,1)                                          % Otherwise comment line 156 to return to defaults
     t = optimalT(i);
     Y = deaths(1+t:n);
     plot(1:length(deaths),deaths);
@@ -145,13 +146,26 @@ for i = 1:length(countryList)
     plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
     plot(1+t:n,YpredNormal,"LineWidth",1.5,"Color","m");
+    title("Deaths in " + countryList(i) +" and optimal normal linear regression (t=" + t + ")");
+    legend("Deaths","Deaths 7-Day moving average","Optimal Normal Linear regression");
+    
+    subplot(3,1,2)
+    plot(1:length(deaths),deaths);
+    hold on;
+    plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
     plot(21:n,YpredFull,"LineWidth",1.5,"Color","c");
-    hold on;
-    plot(21:n,YpredStep,"LineWidth",1.5,"Color","g");
-    title("Deaths in " + countryList(i) +" and optimal normal linear regression (t=" + t + ")"); 
-    legend("Deaths","Deaths 7-Day moving average","Optimal Normal Linear regression","Full Linear Regression","Stepwise Regression");
+    title("Deaths in " + countryList(i) +" and full linear regression ");
+    legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
     
+    subplot(3,1,3)
+    plot(1:length(deaths),deaths);
+    hold on;
+    plot(1:length(deaths),movmean(deaths,7),"--");
+    hold on;
+    plot(21:n,YpredStep,"LineWidth",1.5,"Color","k");
+    title("Deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " varaibles)");
+    legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
 end
 
 % Results
