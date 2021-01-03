@@ -23,7 +23,7 @@ stepwiseNumberOfVariables = zeros(length(countryList),1);
 
 
 for i = 1:1:length(countryList)
-    % First Wave
+    %%% First Wave %%%
     
     % Read cases, deaths and population from data files
     [cases,deaths,population] = Group21Exe1Fun3(countryList(i));
@@ -40,7 +40,7 @@ for i = 1:1:length(countryList)
     for t = 0:20                                            % Create X varibales based on all 21 delays
         X(:,t+1) = casesFirstWave(1+t:n1-20+t);
     end
-    X = normalize(X,'range');
+    X = normalize(X,'scale');
     Xinput = [ones(n1-20,1) X];
     Y = deathsFirstWave(21:n1);
     
@@ -84,7 +84,7 @@ for i = 1:1:length(countryList)
     for t = 0:20                                            % Create X varibales based on all 21 delays
         X(:,t+1) = casesSecondWave(1+t:n2-20+t);
     end
-    X = normalize(X,'range');
+    X = normalize(X,'scale');
     Xinput = [ones(n2-20,1) X];
     Y = deathsSecondWave(21:n2);
 
@@ -133,7 +133,5 @@ for i = 1:length(countryList)
     disp("Stepwise regression training set results: R2 = " + R2Training(i,2) + ", Adjusted R2 = " + AdjR2Training(i,2) + ".")
     disp("Stepwise regression testing  set results: R2 = " + R2Test(i,2) + ", Adjusted R2 = " + AdjR2Test(i,2) + ".")
     disp("Stepwise regression number of variables kept = " + stepwiseNumberOfVariables(i) + newline)
-    
-    
 end
 
