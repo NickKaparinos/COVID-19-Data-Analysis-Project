@@ -94,8 +94,8 @@ for i = 1:length(countryList)
     % Display Country Results
     disp(countryList(i) + " Linear Regression Results:");
     disp("Optimal t = " + argMin);
-    disp("RMSE = " + regressionModel.RMSE);
     disp("R2 = " + regressionModel.Rsquared.Ordinary);
+    disp("RMSE = " + regressionModel.RMSE);
     disp("5 best delays (t) = " + rmseArray(i,1) + ", " + rmseArray(i,2) + ", " + rmseArray(i,3) + ", " + rmseArray(i,4) + ", " + rmseArray(i,5) + newline)
 end
 

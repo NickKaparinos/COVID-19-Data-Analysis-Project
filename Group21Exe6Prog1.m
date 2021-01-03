@@ -164,31 +164,30 @@ for i = 1:length(countryList)
     plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
     plot(21:n,YpredStep,"LineWidth",1.5,"Color","k");
-    title("Deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " varaibles)");
+    title("Deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
+end
+
+% Clear command window
+clc
+
+% Create tables to display
+tablesStepwiseRegression = cell(length(countryList));
+regressionTables = cell(length(countryList));
+for i = 1:length(countryList)
+    regressionTables{i} = table(R2Array(i,:)',AdjR2Array(i,:)','VariableNames',{'R2','Adjusted_R2'},'RowName',{'Normal Linear Regression','Full Linear Regression','Stepwise Regression'});
 end
 
 % Results
 disp("Displaying Results:")
 for i = 1:length(countryList)
     disp(countryList(i) + " results:")
-    disp("Normal linear regression: R2 = " + R2Array(i,1) + ", Adjusted R2 = " + AdjR2Array(i,1) + ".")
-    disp("Full linear regression: R2 = " + R2Array(i,2) + ", Adjusted R2 = " + AdjR2Array(i,2) + ".")
-    disp("Stepwise regression: Num of Variables kept = " + stepwiseNumberOfVariables(i) +", R2 = " + R2Array(i,3) + ", Adjusted R2 = " + AdjR2Array(i,3) + ".")
+    disp(regressionTables{1})
+    disp("Stepwise regression number of Variables kept = " + stepwiseNumberOfVariables(i))
     [~,R2SortedIdx] = sort(R2Array(i,:),'descend');
     [~,AdjR2SortedIdx] = sort(AdjR2Array(i,:),'descend');
-    if( countryList(i) == "France")
-       fet = 5; 
-    end
     disp("Best regression type based on R2: " + RegressionType(R2SortedIdx(1)) );
-    disp("Best regression type based on Adjusted R2: " + RegressionType(AdjR2SortedIdx(1)) + newline );
-    
+    disp("Best regression type based on Adjusted R2: " + RegressionType(AdjR2SortedIdx(1)) + newline + newline );
 end
-
-
-
-
-
-
 
 
