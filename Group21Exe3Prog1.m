@@ -37,6 +37,12 @@ dayofMaxCases = zeros(l,1);
 dayofMaxDeaths = zeros(l,1);
 estimatedMaxCases = zeros(l,1);
 estimatedMaxDeaths = zeros(l,1);
+movavgMaxCases = zeros(l,1);
+movavgMaxDeaths = zeros(l,1);
+movavgDayofMaxCases = zeros(l,1);
+movavgDayofMaxDeaths = zeros(l,1);
+movavgEstimatedMaxCases = zeros(l,1);
+movavgEstimatedMaxDeaths = zeros(l,1);
 for i = 1:l
     [cases,deaths,population] = Group21Exe1Fun3(countryList(i));
     countryList(i) = strrep(countryList(i),"_"," "); 
@@ -47,51 +53,44 @@ for i = 1:l
     
     [actualMaxCases(i),dayofMaxCases(i),estimatedMaxCases(i)] = Group21Exe3Fun1(cases);
     [actualMaxDeaths(i),dayofMaxDeaths(i),estimatedMaxDeaths(i)] = Group21Exe3Fun1(deaths);
+    
+    casesMovingAverage = movmean(cases,7);
+    deathsMovingAverage = movmean(deaths,7);
+    
+    [movavgMaxCases(i),movavgDayofMaxCases(i),movavgEstimatedMaxCases(i)] = Group21Exe3Fun1(casesMovingAverage);
+    [movavgMaxDeaths(i),movavgDayofMaxDeaths(i),movavgEstimatedMaxDeaths(i)] = Group21Exe3Fun1(deathsMovingAverage);
 
 end
 
 % Calculate the time interval between peak of cases and peak of deaths
 % Considering that peak of deaths follows peak of cases
-timeInterval = dayofMaxDeaths - dayofMaxCases;
-% if timeInterval negative replace it with zero
-for i=1:length(timeInterval)
-    if timeInterval(i) < 0
-        timeInterval(i) = 0;
-    end
-end
 
-% 95% parametric CI of time intervals
-[~,~,meanCI,~] = ttest(timeInterval);
-% hypothesis testing
 t0 = 14;
-if t0<meanCI(2) && t0>meanCI(1)
-    fprintf('Time between peak of daily cases and deaths can be %i days (Parametric CI check)\n',t0);
-else
-    fprintf('Time between peak of daily cases and deaths can not be %i days (Parametric CI check)\n',t0);
-end
-%or
-[h,~,~,~] = ttest(timeInterval,14);
-if h==0
-    fprintf('Time between peak of daily cases and deaths can be %i days (ttest check)\n',t0);
-else
-    fprintf('Time between peak of daily cases and deaths can not be %i days (ttest check)\n',t0);
-end
-
-
-% 95% bootstrap CI of time intervals
 B = 100;
 alpha = 0.05;
-bootstrMean = bootstrp(B,@mean,timeInterval);
-lowerLim = (B+1)*alpha/2;
-upperLim = B+1-lowerLim;
-limits = [lowerLim upperLim]/B*100;
-bootMeanCI = prctile(bootstrMean,limits); 
-% hypothesis testing
-if t0<bootMeanCI(2) && t0>bootMeanCI(1)
-    fprintf('Time between peak of daily cases and deaths can be %i days (Bootstrap CI check)\n',t0);
-else
-    fprintf('Time between peak of daily cases and deaths can not be %i days (Bootstrap CI check)\n',t0);
+
+% First approach
+timeInterval = dayofMaxDeaths - dayofMaxCases;
+fprintf('First approach:\n')
+[meanCI1,bootMeanCI1] = Group21Exe3Fun2(timeInterval,t0,B,alpha);
+
+% Second approach
+% if there is an outlier in timeInterval remove it
+for i=1:length(timeInterval)
+    if timeInterval(i) < -5
+        timeInterval(i) = NaN;
+    end
 end
+timeInterval(isnan(timeInterval)) = [];
+fprintf('Second approach:\n')
+[meanCI2,bootMeanCI2] = Group21Exe3Fun2(timeInterval,t0,B,alpha);
+
+
+% Third approach
+movavgTimeInterval = movavgDayofMaxDeaths - movavgDayofMaxCases;
+fprintf('Third approach:\n')
+[meanCI3,bootMeanCI3] = Group21Exe3Fun2(movavgTimeInterval,t0,B,alpha);
+
 
 
 
