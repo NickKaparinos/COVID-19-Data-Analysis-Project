@@ -1,6 +1,6 @@
-% Data Analysis Project 2020-2021
+% Data Analysis Project 2020
 % Nikos Kaparinos 9245
-% Vasiliki Zarkadoula 9103
+% Vasiliki Zarkadoul 9103
 % Exercise 6: Multiple Linear Regression
 close all;
 clc;
