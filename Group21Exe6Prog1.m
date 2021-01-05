@@ -168,7 +168,7 @@ for i = 1:length(countryList)
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
 end
 
-% Clear command window
+% Clear console to display results
 clc
 
 % Create tables to display
