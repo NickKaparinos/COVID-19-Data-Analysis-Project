@@ -38,7 +38,6 @@ for i = 1:length(countryList)
         b = b(:,1);
 
         % Diagnostic plot of standardised error
-        %ei_standard = (Y - ypred)/regressionModel.RMSE;
         ei_standard = regressionModel.Residuals.Raw/regressionModel.RMSE;
         if(ismember(t,graphsToPlot))
             subplot(2,2,j)
@@ -90,6 +89,8 @@ for i = 1:length(countryList)
     % Now the array contains values of t in descending order based on rmse
     [~,rmseArray(i,:)] = sort(rmseArray(i,:),'descend');
     rmseArray(i,:) = rmseArray(i,:) - 1;                        % Subtract one because t=0 is stored as 1, t=n is stored as n+1
+    
+    
     
     % Display Country Results
     disp(countryList(i) + " Linear Regression Results:");
