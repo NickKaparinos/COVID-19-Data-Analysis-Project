@@ -10,9 +10,8 @@ clear;
 % Closest European country -> 55, Greece
 country = "Greece";
 
-% Read cases and deaths data files
+% Read cases and deaths from data files
 [cases,deaths,~] = Group21Exe1Fun3(country);
-
 % Start and end of the first Covid-19 wave
 [start1,end1] = Group21Exe1Fun1(cases);
 cases = cases(start1:end1)';
@@ -26,8 +25,7 @@ for j=1:maxCases+1
     countCases(j) = sum(cases == j-1);
 end
 casesEmpiricalPdf = countCases/lengthCases;
-rangeCases = 0:max(cases);
-
+rangeCases = 0:maxCases;
 
 % Find the empirical distribution of deaths
 lengthDeaths = length(deaths);
@@ -37,7 +35,7 @@ for j=1:maxDeaths+1
     countDeaths(j) = sum(deaths == j-1);
 end
 deathsEmpiricalPdf = countDeaths/lengthDeaths;
-rangeDeaths = 0:max(deaths);
+rangeDeaths = 0:maxDeaths;
 
 % Fit an existing parametric probability distribution to data
 distributions = {'Normal'; 'Exponential'; 'Rayleigh'; 'Logistic'; 'Poisson'};
@@ -47,12 +45,19 @@ pValuesDeaths = zeros(length(distributions),1);
 mseCases = zeros(length(distributions),1);
 mseDeaths = zeros(length(distributions),1);
 for i = 1:length(distributions)
-        % Fit probability distributions to cases
+        % Fit probability distributions to cases 
+        % calculate the p-value metric
         probDistribCases = fitdist(cases,distributions{i});
         [~,pValuesCases(i)] = chi2gof(cases,'CDF',probDistribCases);
         casesFittedPdf = pdf(probDistribCases,rangeCases);
         
-        % Histogram of cases and fitted distribution
+        % calculate MSE metric for cases
+        mseCases(i) = 1/(length(casesEmpiricalPdf)-1)*sum((casesEmpiricalPdf-casesFittedPdf').^2);
+        
+        % Graphic display - cases
+        % Plot a histogram with Normalization set to 'pdf' to produce an
+        % estimation of the probability density function and plot the fitted
+        % pdf
         figure;
         histogram(cases,lengthCases,'Normalization','pdf')
         hold on
@@ -61,14 +66,16 @@ for i = 1:length(distributions)
         xlabel('Daily Cases')
         ylabel('Probability')
        
-        mseCases(i) = 1/(length(casesEmpiricalPdf)-1)*sum((casesEmpiricalPdf-casesFittedPdf').^2);
-        
         % Fit probability distributions to deaths
+        % calculate the p-value metric
         probDistribDeaths = fitdist(deaths,distributions{i});
         [~,pValuesDeaths(i)] = chi2gof(deaths,'CDF',probDistribDeaths);
         deathsFittedPdf = pdf(probDistribDeaths,rangeDeaths);
         
-        % Histogram of deaths and fitted distribution
+        % calculate MSE metric for deaths
+        mseDeaths(i) = 1/(length(deathsEmpiricalPdf)-1)*sum((deathsEmpiricalPdf-deathsFittedPdf').^2); 
+
+        % Graphic display - deaths
         figure;
         histogram(deaths,lengthDeaths,'Normalization','probability')
         hold on
@@ -77,10 +84,11 @@ for i = 1:length(distributions)
         xlabel('Daily Deaths')
         ylabel('Probability')
 
-        mseDeaths(i) = 1/(length(deathsEmpiricalPdf)-1)*sum((deathsEmpiricalPdf-deathsFittedPdf').^2); 
 end
 
 % Find best fit using pValue and MSE for cases
+% In order the distribution to fit well to data, p-Value should be close to
+% 1 and MSE close to zero
 [~,indexBestPcases] = max(pValuesCases);
 bestPdistributionCases = distributions{indexBestPcases};
 
@@ -129,7 +137,7 @@ fprintf('Best fitted distribution to deaths is %s\n',bestFitDeaths{1});
 %%%%% Symperasmata - Sxolia %%%%%
 
 % Se auto to zhthma dokimasame 5 katanomes, sygekrimena thn Normal,
-% Exponential,Rayleigh,Logistic,Poisson wste na vroume poia katanomi
+% Exponential,Rayleigh,Logistic kai Poisson wste na vroume poia katanomi
 % prosarmozetai kalytera sta dedomena. Dokimasthkan kai alles katanomes apo
 % to documentation ths fitdist, alla parousiasthkan sfalmata epeidh
 % yparxoun mhdenikes times krousmatwn kai thanatwn sto deigma. Apofasisame 
