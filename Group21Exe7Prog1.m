@@ -1,6 +1,6 @@
-% Data Analysis Project 2020
+% Data Analysis Project 2020-2021
 % Nikos Kaparinos 9245
-% Vasiliki Zarkadoul 9103
+% Vasiliki Zarkadoula 9103
 % Exercise 7: Regression second wave
 close all;
 clc;
@@ -16,9 +16,9 @@ R2Training = zeros(length(countryList),4);
 AdjR2Training = zeros(length(countryList),4);
 R2Test = zeros(length(countryList),4);
 AdjR2Test = zeros(length(countryList),4);
-stepwiseNumberOfVariables = zeros(length(countryList));
+stepwiseNumberOfVariables = zeros(length(countryList),2);
 
-for i = 1:1:length(countryList)
+for i = 1:length(countryList)
     %%% First Wave %%%
     % Read cases and deaths from data files
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
@@ -29,7 +29,7 @@ for i = 1:1:length(countryList)
     deathsFirstWave = deaths(start1:end1)';
     n1 = length(casesFirstWave);
     
-    % Normalised Full Linear Regression Model
+    % Full Linear Regression Model
     X = zeros(n1-20,21);
     for t = 0:20                                            % Create X varibales based on all 21 delays
         X(:,t+1) = casesFirstWave(1+t:n1-20+t);
@@ -66,7 +66,7 @@ for i = 1:1:length(countryList)
     % Training R2 and adjR2
     R2Training(i,3) = 1 - stats.SSresid/stats.SStotal;
     AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),k);
-    stepwiseNumberOfVariables(i) = length(bStep) - 1;
+    stepwiseNumberOfVariables(i,1) = length(bStep) - 1;
     
     % Normalised Stepwise regression
     [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y);
@@ -77,6 +77,7 @@ for i = 1:1:length(countryList)
     % Training R2 and adjR2
     R2Training(i,4) = 1 - stats.SSresid/stats.SStotal;
     AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),k);
+    stepwiseNumberOfVariables(i,2) = length(bStepNorm) - 1;
     
     %%% Second wave %%%
     % Find the start and end of the second wave using Group21Exe1Fun2
@@ -114,17 +115,18 @@ for i = 1:1:length(countryList)
     
     % Save testing R2 and adjR2
     R2Test(i,3) = Rsq(YpredStep,Y);
-    AdjR2Test(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i) + 1);
+    AdjR2Test(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i,1));
     
     % Normalised Step wise regression
     YpredStepNorm = [ones(length(Xnorm),1) Xnorm(:,modelStepNorm)]*bStepNorm;
     
     % Save R2 and adjR2
     R2Test(i,4) = Rsq(YpredStepNorm,Y);
-    AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i) + 1);
+    AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i,2));
     
     
-    % Plot second wave deaths and linear
+    % Plot second wave deaths and full linear regression
+    % Not normalised
     countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
     figure;
     subplot(1,2,1);
@@ -136,6 +138,7 @@ for i = 1:1:length(countryList)
     title("Second wave deaths in " + countryList(i) +" and full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
     
+    % Normalised
     subplot(1,2,2);
     plot(1:length(deathsSecondWave),deathsSecondWave);
     hold on;
@@ -146,6 +149,7 @@ for i = 1:1:length(countryList)
     legend("Deaths","Deaths 7-Day moving average","Normalised Full Linear Regression");
     
     % Plot second wave deaths and stepwise regression
+    % Not normalised
     figure;
     subplot(1,2,1)
     plot(1:length(deathsSecondWave),deathsSecondWave);
@@ -153,16 +157,17 @@ for i = 1:1:length(countryList)
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
     plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
-    title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
+    title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i,1) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
     
+    % Normalised
     subplot(1,2,2)
     plot(1:length(deathsSecondWave),deathsSecondWave);
     hold on;
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
     plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
-    title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
+    title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i,2) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
     
 end
@@ -189,3 +194,24 @@ for i = 1:length(countryList)
     disp(newline);
 end
 
+%%%%% Sumperasmata - Sxolia %%%%%%
+%
+% Parathroume apo ta diagrammata kai apo tis metrikes, oti xwris th xrhsh
+% normalisation, ta montela palindromhsh de mporoun na kanoun katholou
+% akribeis problepseis. Monh eksairesh apotelei h Ellada, sthn opoia ta
+% ta montela ekanan pio akribeis problepseis xwris th xrhsh normalisation.
+% Dokimasthkan diaforetikes methodoi kanonikopoihshs kai h kalyterh htan h
+% methodos range, h opoia kanonikopoiei ta dedomena sto diasthma [0 1].
+%
+% Sugkrinontas ta montela plhrous kai stepwise palindromhshs, sumperainoume
+% oti to stepwise montelo upertairei, me monh eksairesh th Germania. To
+% gegonos oti to stepwise montelo upertairei sto suntelesth prosdiorismou
+% upodeiknuei oti sto plhres montelo emfanizetai to fainomeno ths
+% uperekpaideushs, kathws xrhsimopoiwntas oles tis 21 metablhtes
+% prosarmozetai toso kala sta dedomena ekpaideushs pou xanei th dunatothta
+% ths genikeushs. Afou to stepwise montelo einai kalutero sumfwna me to
+% suntelesth prosdiorismou kai xrhsimopoiei ligoteres metablhtes, einai
+% akoma kalutero sumfwna me ton prosarmosmeno suntelesth prosdiorismou.
+%
+% Sunolika, akoma kai to beltisto montelo se kathe periptwsh de mporei na
+% kanei akribeis problepseis, me monh eksairesh th Germania.

@@ -1,6 +1,6 @@
-% Data Analysis Project 2020
+% Data Analysis Project 2020-2021
 % Nikos Kaparinos 9245
-% Vasiliki Zarkadoul 9103
+% Vasiliki Zarkadoula 9103
 % Exercise 6: Multiple Linear Regression
 close all;
 clc;
@@ -13,7 +13,7 @@ adjRsq = @(ypred,y,n,k) ( 1 - (n-1)/(n-1-k)*sum((ypred-y).^2)/sum((y-mean(y)).^2
 % Selected Countries
 countryList = ["Greece","Belgium","Italy","France","Germany","Netherlands","United_Kingdom"];
 
-% Optimal day for for each country on Exercise 5
+% Optimal delay for each country based on Exercise 5 Results
 optimalT = [0,5,6,6,13,5,0];
 
 % Metrics
@@ -23,8 +23,8 @@ RegressionType = ["Normal Linear Regression","Multiple Linear Regression","Stepw
 stepwiseNumberOfVariables = zeros(length(countryList),1);
 
 for i = 1:length(countryList)
-    % Read cases, deaths and population from data files
-    [cases,deaths,population] = Group21Exe1Fun3(countryList(i));
+    % Read cases and deaths from data files
+    [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
     countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
     
     % Find the start and end of the first wave using Group21Exe1Fun1
@@ -38,8 +38,7 @@ for i = 1:length(countryList)
     X = cases(1:n-t);
     Y = deaths(1+t:n);
     regressionModel = fitlm(X,Y);
-    b = table2array(regressionModel.Coefficients);
-    b = b(:,1);
+    b = regressionModel.Coefficients.Estimate;
     Ypred = [ones(length(X),1) X]*b;
     YpredNormal = Ypred;
     
@@ -49,20 +48,20 @@ for i = 1:length(countryList)
     
     f = figure(i);
     f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
-    j = 1;                                                  % Otherwise comment line 51 to return to defaults
+    j = 1;                                                  % Otherwise comment line 50 to return to defaults
     % Diagnostic plot of standardised error
     ei_standard = (Y - Ypred)/regressionModel.RMSE;
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(Y,repmat(2,1,length(Y)));
+    plot(xlim,[2 2]);
     hold on;
-    plot(Y,zeros(1,length(Y)));
+    plot(xlim,[0 0]);
     hold on;
-    plot(Y,repmat(-2,1,length(Y)));
+    plot(xlim,[-2 -2]);
     title(countryList(i) + " Diagnostic Plot: t = " + t);
-    text(6,-1,"R^2="+R2Array(i,1),'FontSize',12);
-    text(6,-1.5,"Adj R^2="+AdjR2Array(i,1),'FontSize',12);
+    text(0.8*max(Y),-1,"R^2="+R2Array(i,1),'FontSize',12);
+    text(0.8*max(Y),-1.5,"Adj R^2="+AdjR2Array(i,1),'FontSize',12);
     xlabel("Y")
     ylabel("Standard Error");
     j = j+1;
@@ -88,15 +87,14 @@ for i = 1:length(countryList)
     error = Y - Ypred;
     se = sqrt( 1/(length(X)-k-1) * (sum(error.^2)));
     ei_standard = error./se;
-    % ei_standard = (Y - ypred)/regressionModel.RMSE;
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(Y,repmat(2,1,length(Y)));
+    plot(xlim,[2 2]);
     hold on;
-    plot(Y,zeros(1,length(Y)));
+    plot(xlim,[0 0]);
     hold on;
-    plot(Y,repmat(-2,1,length(Y)));
+    plot(xlim,[-2 -2]);
     title(countryList(i) + " Diagnostic Plot: Full Linear Model");
     text(6,-1.25,"R^2="+R2Array(i,2),'FontSize',12);
     text(6,-1.75,"Adj R^2="+AdjR2Array(i,2),'FontSize',12);
@@ -108,7 +106,7 @@ for i = 1:length(countryList)
     [b,~,~,model,stats] = stepwisefit(X,Y);
     b0 = stats.intercept;
     b = [b0; b(model)];
-    k = length(b);
+    k = length(b) - 1;
 
     Ypred = [ones(length(X),1) X(:,model)]*b;
     YpredStep = Ypred;
@@ -125,22 +123,22 @@ for i = 1:length(countryList)
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(Y,repmat(2,1,length(Y)));
+    plot(xlim,[2 2]);
     hold on;
-    plot(Y,zeros(1,length(Y)));
+    plot(xlim,[0 0]);
     hold on;
-    plot(Y,repmat(-2,1,length(Y)));
+    plot(xlim,[-2 -2]);
     title(countryList(i) + " Diagnostic Plot: Full Linear Model");
     text(6,-1,"R^2="+R2Array(i,3),'FontSize',12);
     text(6,-1.5,"Adj R^2="+AdjR2Array(i,3),'FontSize',12);
     xlabel("Y")
     ylabel("Standard Error");
     
+    % Plot ground truth and regression predictions
     f = figure(100+i);
     f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
-    subplot(3,1,1)                                          % Otherwise comment line 156 to return to defaults
+    subplot(3,1,1)                                          % Otherwise comment line 138 to return to defaults
     t = optimalT(i);
-    Y = deaths(1+t:n);
     plot(1:length(deaths),deaths);
     hold on;
     plot(1:length(deaths),movmean(deaths,7),"--");
@@ -174,7 +172,7 @@ clc
 % Create tables to display
 tablesStepwiseRegression = cell(length(countryList));
 regressionTables = cell(length(countryList));
-for i = 1:length(countryList)
+for i = 1:length(countryList)   
     regressionTables{i} = table(R2Array(i,:)',AdjR2Array(i,:)','VariableNames',{'R2','Adjusted_R2'},'RowName',{'Normal Linear Regression','Full Linear Regression','Stepwise Regression'});
 end
 
@@ -182,7 +180,7 @@ end
 disp("Displaying Results:")
 for i = 1:length(countryList)
     disp(countryList(i) + " results:")
-    disp(regressionTables{1})
+    disp(regressionTables{i})
     disp("Stepwise regression number of Variables kept = " + stepwiseNumberOfVariables(i))
     [~,R2SortedIdx] = sort(R2Array(i,:),'descend');
     [~,AdjR2SortedIdx] = sort(AdjR2Array(i,:),'descend');
@@ -191,3 +189,19 @@ for i = 1:length(countryList)
 end
 
 
+%%%%% Sumperasmata - Sxolia %%%%%%
+%
+% Apo ta diagrammata palindromhshs kai tis metrikes aksiologhshs
+% sumperainoume oti se oles tis xwres, ektos apo thn Ellada, to plhres kai
+% to stepwise montelo palindromhshs, mporoun na prosparmostoun polu kala
+% sta dedomena. Dhladh, kai sta 2 montela beltiwnetai h problepsh twn
+% thanatwn se sxesh me to aplo montelo palindromhshs.
+% 
+% Sugkrinontas to plhres me to stepwise montelo, analoga th xwra kai th
+% metrikh pou xrhsimopoieitai, mporei na eksagei kaneis diaforetika
+% sumperasmata. Sugkekrimena, sugkrinontas th metrikh R2, to plhres montelo
+% uperterei tou stepwise montelou. Enw, sugkrinontas th metrikh Adjusted
+% R2, analoga th xwra uperterei diaforetiko modelo. Epishs, thewroume oti
+% akoma kai na usterei stis metrikes to stepwise montelo, exei megalh aksia
+% to gegonos oti exei meiwthei shmantika o arithos twn xarakthristikwn. Gia
+% auto to logo tha xrhsimopoihthoun kai ta 2 montela sto epomeno zhthma.
