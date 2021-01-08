@@ -26,22 +26,17 @@ normCases = cases./sum(cases);
 normDeaths = deaths./sum(deaths);
 
 % Fit an existing parametric probability distribution to days of data
-distributions1param = {'Exponential';'Poisson';'Rayleigh'};
-distributions2param = {'Normal';'Gamma';'HalfNormal';...
-'InverseGaussian';'Nakagami';'Logistic';'Rician'};
+distributions = {'Normal';'Gamma';'HalfNormal';'InverseGaussian';
+'Nakagami';'Logistic';'Rician';'Exponential';'Poisson';'Rayleigh'};
 
-pValuesCases = zeros(length(distributions2param)+length(distributions1param),1);
-pValuesDeaths = zeros(length(distributions2param)+length(distributions1param),1);
-mseCases = zeros(length(distributions2param)+length(distributions1param),1);
-mseDeaths = zeros(length(distributions2param)+length(distributions1param),1);
-for i = 1:length(distributions2param)
+mseCases = zeros(length(distributions),1);
+mseDeaths = zeros(length(distributions),1);
+for i = 1:length(distributions)
         % Fit probability distributions to cases 
-        % calculate the p-value metric
-        probDistribCases = fitdist(daysCases',distributions2param{i},'Frequency',cases);
+        probDistribCases = fitdist(daysCases',distributions{i},'Frequency',cases);
         casesFittedPdf = pdf(probDistribCases,daysCases);
-        [~,pValuesCases(i)] = chi2gof(daysCases,'CDF',probDistribCases);
 
-        % calculate MSE metric for cases
+        % Calculate MSE metric for cases
         mseCases(i) = 1/(length(normCases)-1)*sum((normCases-casesFittedPdf').^2);
         
         % Graphic display - cases
@@ -49,98 +44,53 @@ for i = 1:length(distributions2param)
         bar(daysCases,normCases);
         hold on;
         plot(daysCases,casesFittedPdf);
-        title(distributions2param(i) + " Distribution - Cases");
-        xlabel('Daily Cases')
-        ylabel('Probability')
+        title(distributions(i) + " Distribution - Cases");
+        xlabel('Days')
+        ylabel('Cases')
        
         % Fit probability distributions to deaths
-        % calculate the p-value metric
-        probDistribDeaths = fitdist(daysDeaths',distributions2param{i},'Frequency',deaths);
+        probDistribDeaths = fitdist(daysDeaths',distributions{i},'Frequency',deaths);
         deathsFittedPdf = pdf(probDistribDeaths,daysDeaths);
-        [~,pValuesDeaths(i)] = chi2gof(daysDeaths,'CDF',probDistribDeaths);
-        
-        % calculate MSE metric for deaths
+
+        % Calculate MSE metric for deaths
         mseDeaths(i) = 1/(length(normDeaths)-1)*sum((normDeaths-deathsFittedPdf').^2); 
 
-        % Graphic display - cases
+        % Graphic display - deaths
         figure;
         bar(daysDeaths,normDeaths);
         hold on;
         plot(daysDeaths,deathsFittedPdf);
-        title(distributions2param(i) + " Distribution - Deaths");
-        xlabel('Daily Deaths')
-        ylabel('Probability')
-
-end
-
-for i = 1:length(distributions1param)
-        % Fit probability distributions to cases 
-        % calculate the p-value metric
-        probDistribCases = fitdist(daysCases',distributions1param{i},'Frequency',cases);
-        casesFittedPdf = pdf(probDistribCases,daysCases);
-        [~,pValuesCases(i+length(distributions2param))] = chi2gof(daysCases,'CDF',probDistribCases);
-
-        % calculate MSE metric for cases
-        mseCases(i+length(distributions2param)) = 1/(length(normCases)-1)*sum((normCases-casesFittedPdf').^2);
-        
-        % Graphic display - cases
-        figure;
-        bar(daysCases,normCases);
-        hold on;
-        plot(daysCases,casesFittedPdf);
-        title(distributions1param(i) + " Distribution - Cases");
-        xlabel('Daily Cases')
-        ylabel('Probability')
+        title(distributions(i) + " Distribution - Deaths");
+        xlabel('Days')
+        ylabel('Deaths')
        
-        % Fit probability distributions to deaths
-        % calculate the p-value metric
-        probDistribDeaths = fitdist(daysDeaths',distributions1param{i},'Frequency',deaths);
-        deathsFittedPdf = pdf(probDistribDeaths,daysDeaths);
-        [~,pValuesDeaths(i+length(distributions2param))] = chi2gof(daysDeaths,'CDF',probDistribDeaths);
-        
-        % calculate MSE metric for deaths
-        mseDeaths(i+length(distributions2param)) = 1/(length(normDeaths)-1)*sum((normDeaths-deathsFittedPdf').^2); 
-
-        % Graphic display - cases
-        figure;
-        bar(daysDeaths,normDeaths);
-        hold on;
-        plot(daysDeaths,deathsFittedPdf);
-        title(distributions1param(i) + " Distribution - Deaths");
-        xlabel('Daily Deaths')
-        ylabel('Probability')
-
 end
+
 
 % Find best fit using  MSE for cases and deaths
 % In order the distribution to fit well to data, MSE should be close to 0
 [~,indexBestMSEcases] = min(mseCases);
 [~,indexBestMSEdeaths] = min(mseDeaths);
 
-if le(indexBestMSEcases,length(distributions2param))
-    bestFitCases = distributions2param(indexBestMSEcases);
-else
-    bestFitCases = distributions1param(indexBestMSEcases-length(distributions2param));
-end
+bestFitCases = distributions(indexBestMSEcases);
+bestFitDeaths = distributions(indexBestMSEdeaths);
 
-if le(indexBestMSEdeaths,length(distributions2param))
-    bestFitDeaths = distributions2param(indexBestMSEdeaths);
-else
-    bestFitDeaths = distributions1param(indexBestMSEdeaths-length(distributions2param));
-end
 % Display results
-fprintf('Best fitted distribution to cases is %s\n',bestFitCases{1});
-fprintf('Best fitted distribution to deaths is %s\n',bestFitDeaths{1});
+fprintf('Best fitted distribution to daily cases of first wave is: %s Distribution\n',bestFitCases{1});
+fprintf('Best fitted distribution to daily deaths of first wave is: %s Distribution\n',bestFitDeaths{1});
 
 %%%%% Symperasmata - Sxolia %%%%%
 
-% Se auto to zhthma dokimasame 5 katanomes, sygekrimena thn Normal,
-% Exponential,Rayleigh,Logistic kai Poisson wste na vroume poia katanomi
+% Se auto to zhthma dokimasame 10 katanomes wste na vroume poia katanomi
 % prosarmozetai kalytera sta dedomena. Dokimasthkan kai alles katanomes apo
-% to documentation ths fitdist, alla parousiasthkan sfalmata epeidh
-% yparxoun mhdenikes times krousmatwn kai thanatwn sto deigma. Apofasisame 
-% na xrhsimopoihsoume 2 metrikes gia thn axiologhsh ths prosarmoghs twn
-% katanomwn, thn p-value kai to MSE. Otan diafwnoun ta apotelesmata twn 2
-% metrikwn, dialegoume thn metrikh me thn megalyterh sxetikh diafora.
+% to documentation ths fitdist, alla parousiasthkan kapoia sfalmata (epeidh
+% yparxoun mhdenikes times krousmatwn kai thanatwn sto deigma). Arxika 
+% eixame apofasisei na xrhsimopoihsoume 2 metrikes gia thn axiologhsh ths 
+% prosarmoghs twn katanomwn, thn p-value kai to MSE. Omws eidame oti to 
+% p-value epairne para poly mikres times, enw emeis kata protimhsh tha 
+% thelame na htan konta sth monada. Opote telika krinoume gia th prosarmogh
+% me vash mono to MSE. 
 % Katalhxame oti h katanomh me thn kalyterh prosarmogh kai sta krousmata 
-% kai stous thanatous htan h ekthetikh. 
+% kai stous thanatous htan h Gamma. Auto epivevaiwnetai ki apo ta
+% graphimata kathws fainetai na perigrafei arketa kala th poreia tou prwtou
+% kymatos.
