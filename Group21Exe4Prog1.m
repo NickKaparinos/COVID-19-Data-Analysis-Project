@@ -24,7 +24,7 @@ for i = 1:length(countryList)
     deaths = deaths(start1:end1)';
     n = length(cases);
     
-    % Calculate 3-day moving averages
+    % Calculate 7-day moving averages
     casesMovingAverage = movmean(cases,7);
     deathsMovingAverage = movmean(deaths,7);
     
