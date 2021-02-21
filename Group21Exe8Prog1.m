@@ -18,6 +18,18 @@ R2Test = zeros(length(countryList),5);
 AdjR2Test = zeros(length(countryList),5);
 stepwiseNumberOfVariables = zeros(length(countryList));
 
+
+% LASSO
+lambda = 1:100;
+bLASSOArray = zeros(length(countryList),length(lambda),22);
+
+R2LASSOTraining = zeros(length(countryList),length(lambda));
+AdjR2LASSOTraining = zeros(length(countryList),length(lambda));
+
+R2LASSOTest = zeros(length(countryList),length(lambda));
+AdjR2LASSOTest = zeros(length(countryList),length(lambda));
+
+
 pcaMaxDim = 21;
 bPCAArray = cell(pcaMaxDim,1);
 R2PCATraining = zeros(pcaMaxDim,1);
@@ -66,7 +78,7 @@ for i = 1:1:length(countryList)
     AdjR2Training(i,2) = adjRsq(YpredFull,Y,length(Y),k);
     
     % Step wise regression
-    [bStep,~,~,modelStep,stats] = stepwisefit(X,Y);
+    [bStep,~,~,modelStep,stats] = stepwisefit(X,Y,'Display','off');
     bStep = [stats.intercept; bStep(modelStep)];
     k = length(bStep);
     YpredStep = [ones(length(X),1) X(:,modelStep)]*bStep;
@@ -77,7 +89,7 @@ for i = 1:1:length(countryList)
     stepwiseNumberOfVariables(i) = length(bStep) - 1;
     
     % Normalised Stepwise regression
-    [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y);
+    [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y,'Display','off');
     bStepNorm = [stats.intercept; bStepNorm(modelStepNorm)];
     k = length(bStepNorm);
     YpredStepNorm = [ones(length(Xnorm),1) Xnorm(:,modelStepNorm)]*bStepNorm;
@@ -85,6 +97,27 @@ for i = 1:1:length(countryList)
     % Training R2 and adjR2
     R2Training(i,4) = 1 - stats.SSresid/stats.SStotal;
     AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),k);
+    
+    % LASSO
+    [bLASSO,info] = lasso(normalize(X,'center'),normalize(Y,'center'));
+    
+    bLASSO = bLASSO;     
+    for l = 1:100
+        bLASSOTemp = bLASSO(:,i);
+        b0 = mean(Y) - mean(X)*bLASSOTemp;
+        %b0 = mean(Y);
+        %b0 = 0;
+        %b0 = info.Intercept(i);
+        bLASSOTemp = [b0; bLASSOTemp];
+        YpredLASSO = [ones(length(X),1) X]*bLASSOTemp;
+        
+        bLASSOArray(i,l,:) = bLASSOTemp;
+
+        % Training R2 and AdjR2
+        R2LASSOTraining(i,l) = Rsq(YpredLASSO,Y);
+        AdjR2LASSOTraining(i,l) = adjRsq(YpredLASSO,Y,length(Y),length(bLASSOTemp));
+    end
+    
     
     % PCA
     [~,scores,~] = pca(Xnorm);
@@ -146,6 +179,23 @@ for i = 1:1:length(countryList)
     R2Test(i,4) = Rsq(YpredStepNorm,Y);
     AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i) + 1);
     
+    % LASSO
+    for l = 1:100
+        %bTemp = zeros(size(X,2),1);
+        bTemp = bLASSOArray(i,l,:);
+        bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
+        YpredLASSO =  [ones(length(X),1) normalize(X,'center')]*bTemp;
+        
+        R2LASSOTest(i,l) = Rsq(YpredLASSO,Y);
+        AdjR2LASSOTest(i,l) = adjRsq(YpredLASSO,Y,length(Y),length(bTemp));
+    end
+    
+    [~,argMax] = max( AdjR2LASSOTest(i,:) );
+    bTemp = bLASSOArray(i,argMax,:);
+    bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
+    YpredLASSO =  [ones(length(X),1) normalize(X,'center')]*bTemp;
+    
+    % PCA
     [~,scores,~] = pca(Xnorm);
     for dim = 1:pcaMaxDim
         Xinput = [ ones(length(scores),1) scores(:,1:dim)];
@@ -165,46 +215,55 @@ for i = 1:1:length(countryList)
     AdjR2Test(i,5) = AdjR2PCATest(bestPCA);
     
     
+    
     % Plot second wave deaths and linear
     countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
+%     figure;
+%     subplot(1,2,1);
+%     plot(1:length(deathsSecondWave),deathsSecondWave);
+%     hold on;
+%     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
+%     hold on;
+%     plot(21:n2,YpredFull,"LineWidth",1.5,"Color","m");
+%     title("Second wave deaths in " + countryList(i) +" and full linear regression ");
+%     legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
+%     
+%     subplot(1,2,2);
+%     plot(1:length(deathsSecondWave),deathsSecondWave);
+%     hold on;
+%     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
+%     hold on;
+%     plot(21:n2,YpredFullNorm,"LineWidth",1.5,"Color","c");
+%     title("Second wave deaths in " + countryList(i) +" and normalised full linear regression ");
+%     legend("Deaths","Deaths 7-Day moving average","Normalised Full Linear Regression");
+%     
+%     % Plot second wave deaths and stepwise regression
+%     figure;
+%     subplot(1,2,1)
+%     plot(1:length(deathsSecondWave),deathsSecondWave);
+%     hold on;
+%     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
+%     hold on;
+%     plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
+%     title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
+%     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
+%     
+%     subplot(1,2,2)
+%     plot(1:length(deathsSecondWave),deathsSecondWave);
+%     hold on;
+%     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
+%     hold on;
+%     plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
+%     title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
+%     legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
+
+    % PLOT LASSO
     figure;
-    subplot(1,2,1);
     plot(1:length(deathsSecondWave),deathsSecondWave);
     hold on;
-    plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
-    hold on;
-    plot(21:n2,YpredFull,"LineWidth",1.5,"Color","m");
-    title("Second wave deaths in " + countryList(i) +" and full linear regression ");
-    legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
-    
-    subplot(1,2,2);
-    plot(1:length(deathsSecondWave),deathsSecondWave);
-    hold on;
-    plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
-    hold on;
-    plot(21:n2,YpredFullNorm,"LineWidth",1.5,"Color","c");
-    title("Second wave deaths in " + countryList(i) +" and normalised full linear regression ");
-    legend("Deaths","Deaths 7-Day moving average","Normalised Full Linear Regression");
-    
-    % Plot second wave deaths and stepwise regression
-    figure;
-    subplot(1,2,1)
-    plot(1:length(deathsSecondWave),deathsSecondWave);
-    hold on;
-    plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
-    hold on;
-    plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
-    title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
-    legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
-    
-    subplot(1,2,2)
-    plot(1:length(deathsSecondWave),deathsSecondWave);
-    hold on;
-    plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
-    hold on;
-    plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
-    title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
-    legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
+    plot(21:n2,YpredLASSO,"LineWidth",1.5,"Color","c");
+    title("Second wave deaths in " + countryList(i))
+    legend("Deaths","LASSO");
     
 end
 
@@ -228,6 +287,10 @@ for i = 1:length(countryList)
     disp("Stepwise Regression:");
     disp(tablesStepwiseRegression{i});
     disp(newline);
+end
+
+for i = 1:7
+    disp(max(AdjR2LASSOTest(i,:)));
 end
 
 % TODO: 8, stepwise t prin to 21
