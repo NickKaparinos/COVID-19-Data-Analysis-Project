@@ -1,7 +1,7 @@
 % Data Analysis Project 2020-2021
 % Nikos Kaparinos 9245
 % Vasiliki Zarkadoula 9103
-% Exercise 6: Multiple Linear Regression
+% Exercise 6: Multiple Linear Regression and dimensionality reduction
 close all;
 clc;
 clear;
@@ -23,9 +23,9 @@ RegressionType = ["Normal Linear Regression","Multiple Linear Regression","Stepw
 stepwiseNumberOfVariables = zeros(length(countryList),1);
 
 for i = 1:length(countryList)
-    % Read cases and deaths from data files
+    % Read cases and deaths
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
-    countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
+    countryList(i) = strrep(countryList(i),"_"," ");
     
     % Find the start and end of the first wave using Group21Exe1Fun1
     [start1,end1] = Group21Exe1Fun1(cases);
@@ -47,18 +47,21 @@ for i = 1:length(countryList)
     AdjR2Array(i,1) = regressionModel.Rsquared.Adjusted;
     
     f = figure(i);
-    f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
-    j = 1;                                                  % Otherwise comment line 50 to return to defaults
+    screenSize = get(0,'ScreenSize');
+    if( screenSize(3) == 1920 && screenSize(4) == 1080) % figure position is optimised for 1920x1080 monitors
+        f.Position = [660 10 600 1000];
+    end
+    j = 1;
     % Diagnostic plot of standardised error
     ei_standard = (Y - Ypred)/regressionModel.RMSE;
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(xlim,[2 2]);
+    plot(xlim,[1.96 1.96]);
     hold on;
     plot(xlim,[0 0]);
     hold on;
-    plot(xlim,[-2 -2]);
+    plot(xlim,[-1.96 -1.96]);
     title(countryList(i) + " Diagnostic Plot: t = " + t);
     text(0.8*max(Y),-1,"R^2="+R2Array(i,1),'FontSize',12);
     text(0.8*max(Y),-1.5,"Adj R^2="+AdjR2Array(i,1),'FontSize',12);
@@ -69,7 +72,7 @@ for i = 1:length(countryList)
     % Full Linear Regression Model
     X = zeros(n-20,21);
     k = 21;
-    for t = 0:20                                            % Create X varibales based on all 21 delays
+    for t = 0:20                % Create X varibales based on all 21 delays
         X(:,t+1) = cases(1+t:n-20+t);
     end
     Xinput = [ones(n-20,1) X];
@@ -90,11 +93,11 @@ for i = 1:length(countryList)
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(xlim,[2 2]);
+    plot(xlim,[1.96 1.96]);
     hold on;
     plot(xlim,[0 0]);
     hold on;
-    plot(xlim,[-2 -2]);
+    plot(xlim,[-1.96 -1.96]);
     title(countryList(i) + " Diagnostic Plot: Full Linear Model");
     text(6,-1.25,"R^2="+R2Array(i,2),'FontSize',12);
     text(6,-1.75,"Adj R^2="+AdjR2Array(i,2),'FontSize',12);
@@ -103,7 +106,7 @@ for i = 1:length(countryList)
     j = j+1;
     
     % Step wise regression
-    [b,~,~,model,stats] = stepwisefit(X,Y);
+    [b,~,~,model,stats] = stepwisefit(X,Y,'Display','off');
     b0 = stats.intercept;
     b = [b0; b(model)];
     k = length(b) - 1;
@@ -123,11 +126,11 @@ for i = 1:length(countryList)
     subplot(3,1,j)
     scatter(Y,ei_standard);
     hold on;
-    plot(xlim,[2 2]);
+    plot(xlim,[1.96 1.96]);
     hold on;
     plot(xlim,[0 0]);
     hold on;
-    plot(xlim,[-2 -2]);
+    plot(xlim,[-1.96 -1.96]);
     title(countryList(i) + " Diagnostic Plot: Full Linear Model");
     text(6,-1,"R^2="+R2Array(i,3),'FontSize',12);
     text(6,-1.5,"Adj R^2="+AdjR2Array(i,3),'FontSize',12);
@@ -136,8 +139,11 @@ for i = 1:length(countryList)
     
     % Plot ground truth and regression predictions
     f = figure(100+i);
-    f.Position = [660 10 600 1000];                         % figure position is optimised for 1920x1080 monitors
-    subplot(3,1,1)                                          % Otherwise comment line 138 to return to defaults
+    screenSize = get(0,'ScreenSize');
+    if( screenSize(3) == 1920 && screenSize(4) == 1080) % figure position is optimised for 1920x1080 monitors
+        f.Position = [660 10 600 1000];
+    end
+    subplot(3,1,1)                                        
     t = optimalT(i);
     plot(1:length(deaths),deaths);
     hold on;
@@ -165,9 +171,6 @@ for i = 1:length(countryList)
     title("Deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
 end
-
-% Clear console to display results
-clc
 
 % Create tables to display
 tablesStepwiseRegression = cell(length(countryList));
@@ -203,5 +206,9 @@ end
 % uperterei tou stepwise montelou. Enw, sugkrinontas th metrikh Adjusted
 % R2, analoga th xwra uperterei diaforetiko modelo. Epishs, thewroume oti
 % akoma kai na usterei stis metrikes to stepwise montelo, exei megalh aksia
-% to gegonos oti exei meiwthei shmantika o arithos twn xarakthristikwn. Gia
+% to gegonos oti exei meiwthei shmantika o arithmos twn xarakthristikwn.Gia
 % auto to logo tha xrhsimopoihthoun kai ta 2 montela sto epomeno zhthma.
+
+
+
+% TODO SCREEN SIZE
