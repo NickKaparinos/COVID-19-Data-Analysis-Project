@@ -208,7 +208,3 @@ end
 % akoma kai na usterei stis metrikes to stepwise montelo, exei megalh aksia
 % to gegonos oti exei meiwthei shmantika o arithmos twn xarakthristikwn.Gia
 % auto to logo tha xrhsimopoihthoun kai ta 2 montela sto epomeno zhthma.
-
-
-
-% TODO SCREEN SIZE
