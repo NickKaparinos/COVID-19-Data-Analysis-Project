@@ -20,7 +20,7 @@ stepwiseNumberOfVariables = zeros(length(countryList),2);
 
 for i = 1:length(countryList)
     %%% First Wave %%%
-    % Read cases and deaths from data files
+    % Read cases and deaths
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
     
     % Find the start and end of the first wave using Group21Exe1Fun1
@@ -58,25 +58,23 @@ for i = 1:length(countryList)
     AdjR2Training(i,2) = adjRsq(YpredFull,Y,length(Y),k);
     
     % Step wise regression
-    [bStep,~,~,modelStep,stats] = stepwisefit(X,Y);
+    [bStep,~,~,modelStep,stats] = stepwisefit(X,Y,'Display','off');
     bStep = [stats.intercept; bStep(modelStep)];
-    k = length(bStep);
     YpredStep = [ones(length(X),1) X(:,modelStep)]*bStep;
     
     % Training R2 and adjR2
     R2Training(i,3) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),k);
+    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),length(bStep)-1);
     stepwiseNumberOfVariables(i,1) = length(bStep) - 1;
     
     % Normalised Stepwise regression
-    [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y);
+    [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y,'Display','off');
     bStepNorm = [stats.intercept; bStepNorm(modelStepNorm)];
-    k = length(bStepNorm);
     YpredStepNorm = [ones(length(Xnorm),1) Xnorm(:,modelStepNorm)]*bStepNorm;
     
     % Training R2 and adjR2
     R2Training(i,4) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),k);
+    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),length(bStepNorm)-1);
     stepwiseNumberOfVariables(i,2) = length(bStepNorm) - 1;
     
     %%% Second wave %%%
@@ -126,8 +124,9 @@ for i = 1:length(countryList)
     
     
     % Plot second wave deaths and full linear regression
+    
     % Not normalised
-    countryList(i) = strrep(countryList(i),"_"," ");            % Replace "_" because it is used for subscripts in plot titles
+    countryList(i) = strrep(countryList(i),"_"," ");
     figure;
     subplot(1,2,1);
     plot(1:length(deathsSecondWave),deathsSecondWave);
@@ -137,6 +136,8 @@ for i = 1:length(countryList)
     plot(21:n2,YpredFull,"LineWidth",1.5,"Color","m");
     title("Second wave deaths in " + countryList(i) +" and full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
+    xlabel("Days")
+    ylabel("Deaths")
     
     % Normalised
     subplot(1,2,2);
@@ -147,6 +148,8 @@ for i = 1:length(countryList)
     plot(21:n2,YpredFullNorm,"LineWidth",1.5,"Color","c");
     title("Second wave deaths in " + countryList(i) +" and normalised full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Normalised Full Linear Regression");
+    xlabel("Days")
+    ylabel("Deaths")
     
     % Plot second wave deaths and stepwise regression
     % Not normalised
@@ -159,6 +162,8 @@ for i = 1:length(countryList)
     plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
     title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i,1) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
+    xlabel("Days")
+    ylabel("Deaths")
     
     % Normalised
     subplot(1,2,2)
@@ -169,11 +174,10 @@ for i = 1:length(countryList)
     plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
     title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i,2) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
+    xlabel("Days")
+    ylabel("Deaths")
     
 end
-
-% Clear console to display results
-clc;
 
 % Create tables to display
 tablesFullRegression = cell(length(countryList));
@@ -185,6 +189,7 @@ end
 
 % Display Results
 disp("Displaying Results:")
+disp(newline);
 for i = 1:length(countryList)
     disp(countryList(i) + " results:");
     disp("Full Linear Regression:");
@@ -196,22 +201,27 @@ end
 
 %%%%% Sumperasmata - Sxolia %%%%%%
 %
+% Exetazontas ta dedomena, sumperainoume oti ta dedomena twn duo kumatwn
+% diaferoun polu. Sugkekrimena, sto deutero kuma gia ton idio arithmo
+% krousmatwn, uparxoun polloi ligoteroi thanatoi. Epomenws, ena modelo
+% ekpaideumeno me ta dedomena tou prwtou kumatos, de tha mporouse na kanei
+% akribeis problepseis sto deutero kuma. Gia auto to logo, dokimasame na
+% kanonikopoihsoume ta dedomena ekpaideushs kai elegxou.
+%
 % Parathroume apo ta diagrammata kai apo tis metrikes, oti xwris th xrhsh
-% normalisation, ta montela palindromhsh de mporoun na kanoun katholou
+% normalisation, ta montela palindromhshs de mporoun na kanoun katholou
 % akribeis problepseis. Monh eksairesh apotelei h Ellada, sthn opoia ta
 % ta montela ekanan pio akribeis problepseis xwris th xrhsh normalisation.
 % Dokimasthkan diaforetikes methodoi kanonikopoihshs kai h kalyterh htan h
 % methodos range, h opoia kanonikopoiei ta dedomena sto diasthma [0 1].
 %
-% Sugkrinontas ta montela plhrous kai stepwise palindromhshs, sumperainoume
-% oti to stepwise montelo upertairei, me monh eksairesh th Germania. To
-% gegonos oti to stepwise montelo upertairei sto suntelesth prosdiorismou
-% upodeiknuei oti sto plhres montelo emfanizetai to fainomeno ths
-% uperekpaideushs, kathws xrhsimopoiwntas oles tis 21 metablhtes
-% prosarmozetai toso kala sta dedomena ekpaideushs pou xanei th dunatothta
-% ths genikeushs. Afou to stepwise montelo einai kalutero sumfwna me to
-% suntelesth prosdiorismou kai xrhsimopoiei ligoteres metablhtes, einai
-% akoma kalutero sumfwna me ton prosarmosmeno suntelesth prosdiorismou.
+% Sugkrinontas ton prosarmosmeno suntelesth prosdiorismou gia ta  montela 
+% plhrous kai stepwise palindromhshs, sumperainoume oti to stepwise modelo
+% upertairei, me monh eksairesh th Germania.
 %
 % Sunolika, akoma kai to beltisto montelo se kathe periptwsh de mporei na
 % kanei akribeis problepseis, me monh eksairesh th Germania.
+%
+% Enas problhmatismos mas einai h xrhsh normalization sta dedomena elegxou.
+% Kanontas kanonikopoihsh prin apo thn problepsh, exoume eksagei
+% plhroforia, kati to opoio genika den einai epithumhto.
