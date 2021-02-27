@@ -11,10 +11,9 @@ else
 end
 
 % 95% bootstrap CI of time intervals
+rng default;
 bootstrMean = bootstrp(B,@mean,timeInterval);
-lowerLim = (B+1)*alpha/2;
-upperLim = B+1-lowerLim;
-limits = [lowerLim upperLim]/B*100;
+limits = [alpha/2 100-alpha/2];
 bootMeanCI = prctile(bootstrMean,limits); 
 % hypothesis testing
 if t0<bootMeanCI(2) && t0>bootMeanCI(1)

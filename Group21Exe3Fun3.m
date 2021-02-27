@@ -1,4 +1,4 @@
-function bestFit = Group21Exe3Fun3(data,distributions)
+function bestDistribution = Group21Exe3Fun3(data,distributions)
 % This function finds the distrubition that fits best the data based on MSE
 
 normData = data./sum(data);
@@ -11,7 +11,7 @@ for i = 1:length(distributions)
     mse(i) = 1/(length(normData)-1)*sum((normData-fittedPdf').^2);
 end
 [~,indexMSE] = min(mse);
-bestFit = distributions(indexMSE);
+bestDistribution = distributions(indexMSE);
 end
 
 

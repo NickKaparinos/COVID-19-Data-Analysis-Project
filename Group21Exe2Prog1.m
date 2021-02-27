@@ -1,7 +1,7 @@
 % Data Analysis Project 2020-2021
 % Nikos Kaparinos 9245
 % Vasiliki Zarkadoula 9103
-% Exercise 2: Fit distribitions found in excersise 1 to 10 countries and
+% Exercise 2: Fit distribition found in excersise 1 to 10 countries and
 % check goodness-of-fit.
 close all;
 clc;
@@ -9,22 +9,17 @@ clear;
 
 % Selected Countries
 countryList = ["Austria","Belgium","Italy","France","Germany","Hungary",...
-    "Ireland","Finland","Netherlands","United_Kingdom"];
+"Ireland","Finland","Netherlands","United_Kingdom"];
 
-% Distribution chosen from excercise 1
-distribution = 'Exponential';
+% Distribution chosen from excercise 1 for cases and deaths
+distribution = 'Gamma';
 
-pValuesCases = zeros(length(countryList),1);
-pValuesDeaths = zeros(length(countryList),1);
-hCases = zeros(length(countryList),1);
-hDeaths = zeros(length(countryList),1);
-fitDeaths = string.empty;
-fitCases = string.empty;
-counterCases = 0;
-counterDeaths = 0;
+mseCases = zeros(length(countryList),1);
+mseDeaths = zeros(length(countryList),1);
 for i = 1:length(countryList)
     % Read cases and deaths from data files
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
+    % Replace "_" because it is used for subscripts in plot titles
     countryList(i) = strrep(countryList(i),"_"," "); 
     
     % Find the start and end of the first wave using Group21Exe1Fun1
@@ -32,104 +27,75 @@ for i = 1:length(countryList)
     cases = cases(start1:end1)';
     deaths = deaths(start1:end1)';
     
-    rangeCases = 0:max(cases);
-    rangeDeaths = 0:max(deaths);
+    % Days of first wave
+    daysCases = 1:length(cases);
+    daysDeaths = 1:length(deaths);
     
-    % Fit exponential distribution to cases and check goodness-of-fit
-    % Find the number of countries in which the distribution fits well to
-    % their cases
-    probDistribCases = fitdist(cases,distribution);
-    casesFittedPdf = pdf(probDistribCases,rangeCases);
-    [hCases(i),pValuesCases(i)] = chi2gof(cases,'CDF',probDistribCases);
-    if hCases(i) == 1
-        fitCases{i} = 'No';
-    else
-        counterCases = counterCases +1;
-        fitCases{i} = 'Yes';
-    end
+    % Normalized cases and deaths
+    normCases = cases./sum(cases);
+    normDeaths = deaths./sum(deaths);
     
-    % Fit exponential distribution to deaths and check goodness-of-fit
-    % Find the number of countries in which the distribution fits well to
-    % their deaths
-    probDistribDeaths = fitdist(deaths,distribution);
-    predictedDeaths = pdf(probDistribDeaths,rangeDeaths);
-    [hDeaths(i),pValuesDeaths(i)] = chi2gof(deaths,'CDF',probDistribDeaths);
-    if hDeaths(i) == 1
-        fitDeaths{i} = 'No';
-    else
-        counterDeaths = counterDeaths + 1;
-        fitDeaths{i} = 'Yes';
-    end
+    % Fit the chosen distribution to cases and check goodness-of-fit
+    probDistribCases = fitdist(daysCases',distribution,'Frequency',cases);
+    casesFittedPdf = pdf(probDistribCases,daysCases);
+    
+    % Calculate MSE metric for cases
+    mseCases(i) = 1/(length(normCases)-1)*sum((normCases-casesFittedPdf').^2);
+    
+    % Fit the chosen distribution to deaths and check goodness-of-fit
+    probDistribDeaths = fitdist(daysDeaths',distribution,'Frequency',deaths);
+    deathsFittedPdf = pdf(probDistribDeaths,daysDeaths);
+    
+    % Calculate MSE metric for deaths
+    mseDeaths(i) = 1/(length(normDeaths)-1)*sum((normDeaths-deathsFittedPdf').^2);
     
     % Graphic display
-    % Plot a histogram with Normalization set to 'pdf' to produce an 
-    % estimation of the probability density function and plot the fitted 
-    % pdf
     figure(i);
-    histogram(cases,length(cases),'Normalization','pdf')
-    hold on
-    plot(rangeCases,casesFittedPdf);
-    title(countryList(i) + " - Exponential Distribution - Cases ");
-    xlabel('Daily Cases')
-    ylabel('Probability')
+    bar(daysCases,normCases);
+    hold on;
+    plot(daysCases,casesFittedPdf);
+    title(countryList(i)+' - '+ distribution + '  Distribution - Cases');
+    xlabel('Days')
+    ylabel('Normalized Cases')
     
     figure(i+100);
-    histogram(deaths,length(deaths),'Normalization','pdf')
-    hold on
-    plot(rangeDeaths,predictedDeaths);
-    title(countryList(i) + " - Exponential Distribution - probability ");
-    xlabel('Daily Deaths')
-    ylabel('Probability')
+    bar(daysDeaths,normDeaths);
+    hold on;
+    plot(daysDeaths,deathsFittedPdf);
+    title(countryList(i)+' - '+ distribution + '  Distribution - Deaths');
+    xlabel('Days')
+    ylabel('Normalized Deaths')
     
 end
+% Sort countries based on the good fit (min MSE) of the parametric 
+% distribution to each country data
+[sortedMSEcases, sortedMSEcasesIndex] = sort(mseCases);
+countryListCases = countryList(sortedMSEcasesIndex);
 
-% Sort countries based on the good fit of the parametric distribution to 
-% each country data
-[pValuesCases,sortedPcasesIndex] = sort(pValuesCases,'descend');
-hCases = hCases(sortedPcasesIndex);
-countryListCases = countryList(sortedPcasesIndex);
-fitCases = fitCases(sortedPcasesIndex);
-
-[pValuesDeaths,sortedPdeathsIndex] = sort(pValuesDeaths,'descend');
-hCases = hCases(sortedPdeathsIndex);
-countryListDeaths = countryList(sortedPdeathsIndex);
-fitDeaths = fitDeaths(sortedPdeathsIndex);
+[sortedMSEdeaths, sortedMSEdeahsIndex] = sort(mseDeaths);
+countryListDeaths = countryList(sortedMSEdeahsIndex);
 
 % Display results to command window
-% cases
-fprintf('Results for cases:\n');
-tablesofResults = table([pValuesCases(1);hCases(1);fitCases(1)],...
-[pValuesCases(2);hCases(2);fitCases(2)],[pValuesCases(3);hCases(3);fitCases(3)],...
-[pValuesCases(4);hCases(4);fitCases(4)],[pValuesCases(5);hCases(5);fitCases(5)],...
-[pValuesCases(6);hCases(6);fitCases(6)],[pValuesCases(7);hCases(7);fitCases(7)],...
-[pValuesCases(8);hCases(8);fitCases(8)],[pValuesCases(9);hCases(9);fitCases(9)],...
-[pValuesCases(10);hCases(10);fitCases(10)],'VariableNames',...
-{'Ireland','Austria','France','Belgium','Germany','Italy','Netherlands',...
-'Finland','Hungary','United_Kingdom'},'RowName',{'p-value','h','distribution fits'});
+fprintf('Sorted countries based on MSE for cases: \n\n');
+tablesofResults = table(sortedMSEcases(1)',sortedMSEcases(2),...
+sortedMSEcases(3)',sortedMSEcases(4)',sortedMSEcases(5)',sortedMSEcases(6)',...
+sortedMSEcases(7)',sortedMSEcases(8)',sortedMSEcases(9)',sortedMSEcases(10)',...
+'VariableNames',{'United_Kingdom','Italy','Netherlands','Germany','Hungary',...
+'Belgium','Finland','France','Ireland','Austria'},'RowName',{'MSE'});
 disp(tablesofResults);
 
-% deaths
-fprintf('Results for deaths:\n');
-tablesofResults = table(...
-[pValuesDeaths(1);hDeaths(1);fitDeaths(1)],[pValuesDeaths(2);hDeaths(2);fitDeaths(2)],...
-[pValuesDeaths(3);hDeaths(3);fitDeaths(3)],[pValuesDeaths(4);hDeaths(4);fitDeaths(4)],...
-[pValuesDeaths(5);hDeaths(5);fitDeaths(5)],[pValuesDeaths(6);hDeaths(6);fitDeaths(6)],...
-[pValuesDeaths(7);hDeaths(7);fitDeaths(7)],[pValuesDeaths(8);hDeaths(8);fitDeaths(8)],...
-[pValuesDeaths(9);hDeaths(9);fitDeaths(10)],[pValuesDeaths(10);hDeaths(10);fitDeaths(10)],...
-'VariableNames',{'Finland','France','Belgium','Germany','United_Kingdom','Austria','Netherlands',...
-'Italy','Ireland','Hungary'},'RowName',{'p-value','h','distribution fits'});
+fprintf('\nSorted countries based on MSE for deaths: \n\n');
+tablesofResults = table(sortedMSEdeaths(1)',sortedMSEdeaths(2),...
+sortedMSEdeaths(3)',sortedMSEdeaths(4)',sortedMSEdeaths(5)',sortedMSEdeaths(6)',...
+sortedMSEdeaths(7)',sortedMSEdeaths(8)',sortedMSEdeaths(9)',sortedMSEdeaths(10)',...
+'VariableNames',{'Belgium','Italy','United_Kingdom','Netherlands','Germany',...
+'Hungary','France','Austria','Finland','Ireland'},'RowName',{'MSE'});
 disp(tablesofResults);
-
-fprintf('\nExponential Distrubition for cases fits to %0.2f%% of the countries\n',(counterCases/length(countryList))*100);
-fprintf('Exponential Distrubition for deaths fits to %0.2f%% of the countries\n',(counterDeaths/length(countryList))*100);
 
 %%%%% Symperasmata - Sxolia %%%%%
 
-% Se auto to zhthma prosarmosame thn veltisth katanomh poy vrethike sto
-% zhthma 1 se alles 10 europaikes xwres. Oson afora ta krousmata, gia to
-% 80% twn xwrwn den aporriptoume oti proerxontai apo ekthetikh katanomh.
-% Parola auta mono stis 3 apo tis 10 xwres h katanomh fainetai na
-% prosarmozetai poly kala (p>0.4). Oson afora tous thanatous, gia to
-% 60% twn xwrwn den aporriptoume oti proerxontai apo ekthetikh katanomh,
-% alla vlepoume oti 4 apo tis 10 xwres prosarmozontai poly kala (p>0.4).
+% Se auto to zhthma prosarmosame thn veltisth katanomh pou vrethike sto
+% zhthma 1 se alles 10 europaikes xwres. Genika kai stis alles xwres
+% fainetai toso apo ta diagrammata, oso ki apo tis times tou MSE, oti h
+% katanamomh Gamma prosarmozetai poly kala sta dedomena.
 

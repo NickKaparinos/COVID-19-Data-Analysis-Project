@@ -10,29 +10,21 @@ warning('off','all')
 
 % Selected Countries
 countryList = ["Greece","Austria","Belgium","Italy","France","Germany",...
-    "Hungary","Ireland","Finland","Netherlands","United_Kingdom"];
+"Hungary","Ireland","Finland","Netherlands","United_Kingdom"];
+n = length(countryList);
 
-c = length(countryList);
-bestFitCases = cell(c,1);
-bestFitDeaths = cell(c,1);
-maxPvalueCases = zeros(c,1);
-maxPvalueDeaths = zeros(c,1);
-minMSEcases = zeros(c,1);
-minMSEdeaths = zeros(c,1);
-actualMaxCases = zeros(c,1);
-actualMaxDeaths = zeros(c,1);
-dayofMaxCases = zeros(c,1);
-dayofMaxDeaths = zeros(c,1);
-estimatedMaxCases = zeros(c,1);
-estimatedMaxDeaths = zeros(c,1);
-movavgMaxCases = zeros(c,1);
-movavgMaxDeaths = zeros(c,1);
-movavgDayofMaxCases = zeros(c,1);
-movavgDayofMaxDeaths = zeros(c,1);
-movavgEstimatedMaxCases = zeros(c,1);
-movavgEstimatedMaxDeaths = zeros(c,1);
-for i = 1:c
-    % Read cases and deaths from data files
+bestDistributionCases = cell(n,1);
+bestDistributionDeaths = cell(n,1);
+actualMaxCases = zeros(n,1);
+actualMaxDeaths = zeros(n,1);
+dayofMaxCases = zeros(n,1);
+dayofMaxDeaths = zeros(n,1);
+estimatedMaxCases = zeros(n,1);
+estimatedMaxDeaths = zeros(n,1);
+estimatedDayofMaxCases = zeros(n,1);
+estimatedDayofMaxDeaths = zeros(n,1);
+for i = 1:n
+    % Read cases and deaths
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
     countryList(i) = strrep(countryList(i),"_"," "); 
     
@@ -41,67 +33,48 @@ for i = 1:c
     cases = cases(start1:end1)';
     deaths = deaths(start1:end1)';
     
-    % Calculate 3-day moving averages
-    casesMovingAverage = movmean(cases,3);
-    deathsMovingAverage = movmean(deaths,3);
+    % Days of first wave
+    daysCases = 1:length(cases);
+    daysDeaths = 1:length(deaths);
     
     % Find the best distribution for each country's cases and deaths
-    distributions = {'Normal'; 'Exponential'; 'Rayleigh'; 'Logistic'; 'Poisson'};
-    bestFitCases{i} = Group21Exe3Fun3(cases,distributions);
-    bestFitDeaths{i} = Group21Exe3Fun3(deaths,distributions);
+    distributions = {'Normal';'Gamma';'HalfNormal';'InverseGaussian';
+    'Nakagami';'Logistic';'Rician';'Exponential';'Poisson';'Rayleigh'};
+
+    bestDistributionCases{i} = Group21Exe3Fun3(cases,distributions);
+    bestDistributionDeaths{i} = Group21Exe3Fun3(deaths,distributions);
     
     % Find max values of cases and deaths, the day that they occured and an
-    % estimation of this max value based on the most suitable probability distribution
-    [actualMaxCases(i),dayofMaxCases(i),estimatedMaxCases(i)] = Group21Exe3Fun1(cases,bestFitCases{i});
-    [actualMaxDeaths(i),dayofMaxDeaths(i),estimatedMaxDeaths(i)] = Group21Exe3Fun1(deaths,bestFitDeaths{i});
-    
-    % Find days of peaks in order to calculate the moving average conf.
-    % interval of differences
-    [~,movavgDayofMaxCases(i),~] = Group21Exe3Fun1(casesMovingAverage,bestFitCases{i});
-    [~,movavgDayofMaxDeaths(i),~] = Group21Exe3Fun1(deathsMovingAverage,bestFitDeaths{i});
-
-    % plot cases and peak
+    % estimation of this max value and day based on the most suitable 
+	% probability distribution
+    [actualMaxCases(i),dayofMaxCases(i),estimatedMaxCases(i),estimatedDayofMaxCases(i)] = Group21Exe3Fun1(cases,bestDistributionCases{i});
+    [actualMaxDeaths(i),dayofMaxDeaths(i),estimatedMaxDeaths(i),estimatedDayofMaxDeaths(i)] = Group21Exe3Fun1(deaths,bestDistributionDeaths{i});
+   
+    % Plot cases and peak
     figure(i);
     subplot(2,1,1);
-    plot(1:length(cases),cases);
+    bar(daysCases,cases);
     hold on
-    p1 = plot([dayofMaxCases(i) dayofMaxCases(i)],ylim,'r');
+    p1 = plot([dayofMaxCases(i) dayofMaxCases(i)],ylim,'m','LineWidth',1.25);
+    hold on
+    pp1 = plot([estimatedDayofMaxCases(i) estimatedDayofMaxCases(i)],ylim,'g','LineWidth',1.25);
     xlabel('Days of first wave');
     ylabel('Daily Cases')
     title(countryList(i));
-    legend(p1,'Day that max cases occur')
-    hold off
-    % plot deaths and peak
-    subplot(2,1,2); 
-    plot(1:length(deaths),deaths);
-    hold on
-    p2 = plot([dayofMaxDeaths(i) dayofMaxDeaths(i)],ylim,'r');
-    xlabel('Days of first wave');
-    ylabel('Daily Deaths')
-    title(countryList(i));
-    legend(p2,'Day that max deaths occur')
+    legend([p1 pp1],{'Day that max cases occur','Estimated day that max cases occur'})
     hold off
     
-    % plot moving average cases and peak
-    figure(i+100);
-    subplot(2,1,1);
-    plot(1:length(casesMovingAverage),casesMovingAverage);
-    hold on
-    p3 = plot([movavgDayofMaxCases(i) movavgDayofMaxCases(i)],ylim,'r');
-    xlabel('Days of first wave');
-    ylabel('Daily Cases')
-    title(countryList(i) + " - Moving average");
-    legend(p3,'Day that max cases occur')
-    hold off
-    % plot moving average deaths and peak
+    % Plot deaths and peak
     subplot(2,1,2); 
-    plot(1:length(deathsMovingAverage),deathsMovingAverage);
+    bar(daysDeaths,deaths);
     hold on
-    p2 = plot([movavgDayofMaxDeaths(i) movavgDayofMaxDeaths(i)],ylim,'r');
+    p2 = plot([dayofMaxDeaths(i) dayofMaxDeaths(i)],ylim,'m','LineWidth',1.25);
+    hold on
+    pp2 = plot([estimatedDayofMaxDeaths(i) estimatedDayofMaxDeaths(i)],ylim,'g','LineWidth',1.25);
     xlabel('Days of first wave');
     ylabel('Daily Deaths')
-    title(countryList(i) + " - Moving average");
-    legend(p2,'Day that max deaths occur')
+    title(countryList(i));
+    legend([p2 pp2],{'Day that max deaths occur','Estimated day that max deaths occur'})
     hold off
 end
 
@@ -132,65 +105,58 @@ disp(tablesofResults);
 % Considering that peak of deaths follows peak of cases
 t0 = 14;
 B = 1000;
-alpha = 0.05;
+alpha = 5;
 
 % First approach
 timeInterval = dayofMaxDeaths - dayofMaxCases;
+timeIntervalEstimation = estimatedDayofMaxDeaths - estimatedDayofMaxCases;
+
 % Display time intervals 
 fprintf('\n\nTime intervals between days of peak of deaths and peak of cases\n\n');
-tablesofResults = table(timeInterval(1),timeInterval(2),timeInterval(3),...
-timeInterval(4),timeInterval(5),timeInterval(6),timeInterval(7),...
-timeInterval(8),timeInterval(9),timeInterval(10),timeInterval(11),...
+tablesofResults = table([timeInterval(1);timeIntervalEstimation(1)],...
+[timeInterval(2);timeIntervalEstimation(2)],[timeInterval(3);timeIntervalEstimation(3)],...
+[timeInterval(4);timeIntervalEstimation(4)],[timeInterval(5);timeIntervalEstimation(5)],...
+[timeInterval(6);timeIntervalEstimation(6)],[timeInterval(7);timeIntervalEstimation(7)],...
+[timeInterval(8);timeIntervalEstimation(8)],[timeInterval(9);timeIntervalEstimation(9)],...
+[timeInterval(10);timeIntervalEstimation(10)],[timeInterval(11);timeIntervalEstimation(11)],...
 'VariableNames',{'Greece','Austria','Belgium','Italy','France','Germany',...
 'Hungary','Ireland','Finland','Netherlands','United_Kingdom'},'RowName',...
-{'Time Interval'});
+{'Time Interval','Time Interval Estimation'});
 disp(tablesofResults);
 
+% Hypothesis testing that time interval between peak of cases and peak of 
+% deaths is 14 days
 fprintf('\n\nHypothesis testing results:\n')
-fprintf('First approach:\n')
 [meanCI1,bootMeanCI1] = Group21Exe3Fun2(timeInterval,t0,B,alpha);
 
-% Second approach
-% if there is an outlier in timeInterval remove it
-for i=1:length(timeInterval)
-    if timeInterval(i) < -10
-        timeInterval(i) = NaN;
-    end
-end
-timeInterval(isnan(timeInterval)) = [];
-fprintf('Second approach:\n')
-[meanCI2,bootMeanCI2] = Group21Exe3Fun2(timeInterval,t0,B,alpha);
 
-% Third approach
-% moving average
-movavgTimeInterval = movavgDayofMaxDeaths - movavgDayofMaxCases;
-fprintf('Third approach:\n')
-[meanCI3,bootMeanCI3] = Group21Exe3Fun2(movavgTimeInterval,t0,B,alpha);
+%Same as above but for the estimated days of max cases and deaths
+fprintf('\n\nHypothesis testing results:\n')
+fprintf('Estimation:\n')
+[meanCI2,bootMeanCI2] = Group21Exe3Fun2(timeIntervalEstimation,t0,B,alpha);
 
-%%%%% Symperasmata - Sxolia %%%%%
 
-% Arxika vriskoume apo tis 5 katanomes auth poy prosarmozetai kalitera sta
+%%%%% Symperasmata - Sxolia %%%%% 
+
+% Arxika vriskoume apo tis 10 katanomes auth pou prosarmozetai kalytera sta
 % dedomena ths kathe xwras. Parathroume oti stis perissoteres periptwseis
-% kai eidika stous thanatous prosarmozetai veltista h ekthetikh katanomh.
+% prosarmozetai veltista h gamma katanomh, opws kai sto prwto erwthma.
 % Sth synexeia me bash th kalyterh katanomh gia kathe xwra ektimhsame 
-% ypoligistika th koryfwsh twn krousmatwn kai twn thanatwn kai ta sygriname
-% me tis pragmatikes koryfwseis. Parathroume oti exoun arketa megalh
-% apoklish oi ektimhseis apo tis pragmatikes.
+% th koryfwsh twn krousmatwn kai twn thanatwn apo th ktanomh kai ta sygriname
+% me tis pragmatikes koryfwseis. 
 
-% Epishs vrhkame tis meres stis opoies exoume koryfwsh sta krousmata kai
-% tous thanatous gia kathe xwra. Epeita, ypologisame ta 95% parametrika kai
-% bootstrap diasthmata empistosynhs ths xronikhs diaforas twn koryfwsewn
-% metaxy thanatwn kai krousmatwn. Akolouthisame 3 proseggiseis. Sthn prwth
-% symperilavame ola ta dedomena,enw sth deuterh diwxame tis xwres, stis opoies
-% h koryfwsh twn krousmatwn epetai arketa ths koryfwshs twn thanatwn 
-% (10 meres). Emfanisthke mia xwra outlier kai ayth htan h Ellada.
-% Thewroume oti auto ofeiletai ston mikro arithmo twn covid tests. Sth
-% trith proseggish xrhsimopoihsame ta 3-day moving averages twn krousmatwn
-% kai twn thanatwn me skopo thn exomalynsh twn dedomenwn kai thn euresh ths
-% pragmatikhs koryfwshs tou prwtou kymatos. Ena xaraktiristiko paradeigma
-% einai ths Austrias, sthn opoia mporoume na ypologisoume th
-% xroniki diafora twn koryfwsewn me megalyterh akriveia xrhsimopoiwdas 
-% 3-day moving averages.
+% Epishs kaname mia ektimhsh twn hmerwn stis opoies exoume 
+% koryfwsh sta krousmata kai tous thanatous gia kathe xwra, kathws kai to
+% xroniko diasthma metaxy twn koryfwsewn. 
 
+% Epeita, ypologisame ta 95% parametrika kai bootstrap diasthmata 
+% empistosynhs ths xronikhs diaforas twn koryfwsewn metaxy thanatwn kai 
+% krousmatwn. Kanontas parametriko kai bootstrap elegxo ypotheshs
+% symperainoume oti h xronikh diafora twn  koryfwsewn tha mporouse na einai
+% 14 meres. Den symbainei to idio otan pragamtopoieitai h idia diadikasia 
+% alla gia th xroniki diafora twn korifwsewn twn veltistwn katanomwn.
+
+
+ 
 
 
