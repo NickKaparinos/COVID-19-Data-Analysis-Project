@@ -326,11 +326,16 @@ end
 %%%%% Sumperasmata - Sxolia %%%%%%
 %
 % Se auto to zhthma xrhsimopoieisame tis methodous palindromhshs LASSO kai
-% PLS. Epeita, tis sugkriname me tis methodous Stepwise kathws kai me to
+% PLS. Epeita, tis sugkriname me th methodo Stepwise kathws kai me to
 % plhres montelo palindromhshs.
 %
 % Parathrhthke to idio problhma me to zhthma 7 sto deutero kuma. Logw ths
-% diaforas ths sumperiforas twn krousmatwn-thanatwn, h apodosh twn montelwn
-% palindromhshs htan kakh. Gia na luthei auto to problhma, pali efarmosame
-% normalisation sta dedomena epkpaideushs kai elegxou.
+% diaforetikhs sumperiforas twn dedomenwn, h apodosh twn montelwn
+% palindromhshs den htan kalh. Gia na luthei auto to problhma, pali
+% efarmosame normalisation sta dedomena ekpaideushs kai elegxou. To eidos
+% normalisation ephreazei thn apodosh. Gia auto to logo, sto mentelo PLS,
+% xrhsimopoieitai to belisto eidos kanonikopoihshs gia kathe xwra. Sta
+% upoloipa montela to beltisto eidos kanonikopoihshs htan panta h
+% kanonikopoihsh range.
+%
 %
