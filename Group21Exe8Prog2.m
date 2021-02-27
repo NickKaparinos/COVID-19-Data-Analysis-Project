@@ -20,14 +20,14 @@ stepwiseNumberOfVariables = zeros(length(countryList));
 
 
 % LASSO
-lambda = 1:100;
-bLASSOArray = zeros(length(countryList),length(lambda),22);
-
-R2LASSOTraining = zeros(length(countryList),length(lambda));
-AdjR2LASSOTraining = zeros(length(countryList),length(lambda));
-
-R2LASSOTest = zeros(length(countryList),length(lambda));
-AdjR2LASSOTest = zeros(length(countryList),length(lambda));
+% lambda = 1:100;
+% bLASSOArray = zeros(length(countryList),length(lambda),22);
+% 
+% R2LASSOTraining = zeros(length(countryList),length(lambda));
+% AdjR2LASSOTraining = zeros(length(countryList),length(lambda));
+% 
+% R2LASSOTest = zeros(length(countryList),length(lambda));
+% AdjR2LASSOTest = zeros(length(countryList),length(lambda));
 
 % PLS
 numberOfComponents = 1:21;
@@ -51,7 +51,7 @@ for i = 1:1:length(countryList)
     deathsFirstWave = deaths(start1:end1)';
     n1 = length(casesFirstWave);
     
-    % Normalised Full Linear Regression Model
+    % Full Linear Regression Model
     X = zeros(n1-20,21);
     for t = 0:20                                            % Create X varibales based on all 21 delays
         X(:,t+1) = casesFirstWave(1+t:n1-20+t);
@@ -203,6 +203,7 @@ for i = 1:1:length(countryList)
         AdjR2PLSTest(i,l) = adjRsq(YpredPLS,Y,length(Y),numberOfComponents(i));
     end
     
+    % Find optimal PLS model and save metrics
     [maximum,argMax] = max( AdjR2PLSTest(i,:) );
     AdjR2Test(i,5) = maximum;
     R2Test(i,5) = R2PLSTest(i,argMax);
@@ -210,12 +211,13 @@ for i = 1:1:length(countryList)
     AdjR2Training(i,5) = AdjR2PLSTraining(i,argMax);
     R2Training(i,5) = R2PLSTraining(i,argMax);
     
+    % Optimal PLS model prediction
     bTemp = bPLSArray(i,argMax,:);
     bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
     YpredPLS =  [ones(length(X),1) normalize(X,'center')]*bTemp;
     
 
-    % Find the best regression and compare it to LASSO
+    % Find the best regression and compare it to PLS
     [~,bestRegression] = max(AdjR2Test(i,1:4));
 
     % Plot the best regression
@@ -281,6 +283,7 @@ end
 
 % Display Results
 disp("Displaying Results:")
+disp(newline);
 for i = 1:length(countryList)
     disp(countryList(i) + " results:");
     disp("Full Linear Regression:");
@@ -295,5 +298,3 @@ end
 % for i = 1:7
 %     disp(max(AdjR2LASSOTest(i,:)));
 % end
-
-% TODO: 8, stepwise t prin to 21
