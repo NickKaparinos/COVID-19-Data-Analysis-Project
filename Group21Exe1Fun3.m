@@ -1,8 +1,9 @@
-function [cases,deaths,population] = Group42Exe1Fun3(countryName)
+function [cases,deaths,population] = Group21Exe1Fun3(countryName)
+    % This function reads the data for a specific country
+
     % Dataset Cases
     warning('OFF', 'MATLAB:table:ModifiedAndSavedVarnames')
     casesTable = readtable('Covid19Confirmed.xlsx','basic',true);
-    % casesTable(1,:) = [];
     labels = table2cell(casesTable(:,1:2));
     populations = table2array(casesTable(:,3));
 
@@ -25,7 +26,7 @@ function [cases,deaths,population] = Group42Exe1Fun3(countryName)
     cases(isnan(cases)) = 0;
     deaths(isnan(deaths)) = 0;
     
-    % Fix negative Numbers
+    % Average out negative values
     negativeCases = find(cases < 0);
     negativeDeaths = find(deaths < 0);
     
@@ -42,5 +43,4 @@ function [cases,deaths,population] = Group42Exe1Fun3(countryName)
             deaths(i-1:i+1) = avg;
         end
     end
-    
 end

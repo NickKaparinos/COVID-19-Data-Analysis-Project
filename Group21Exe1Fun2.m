@@ -1,15 +1,22 @@
-function [startSecondWave,endSecondWave] = Group42Exe1Fun2(cases)
+function [startSecondWave,endSecondWave] = Group21Exe1Fun2(data)
     % This function is used to find the start and end of the second wave
-    totalNumberOfCasesSecondWave = sum(cases(200:end));
+    % We define a threshold. The second wave starts when the moving average 
+    % of the data first surpasses the threshold and ends when the moving
+    % average subceeds it.
     
-    thresholdCasesSecond = 0.0012*totalNumberOfCasesSecondWave;
+    % Observing the data, we assume that the second wave started after day number 200
+    totalNumberOfDataSecondWave = sum(data(200:end));
     
-    casesMovingAverage = movmean(cases(200:end),7);
+    % The second wave threshold that resulted from experimentation
+    threshold = 0.0012*totalNumberOfDataSecondWave;
+    
+    % Find 2nd wave
+    movingAverage = movmean(data(200:end),7);
     startFound = false;
     endFound = false;
     j = 200;
-    while( j<=size(cases,2))
-        difference = casesMovingAverage(j-199) - thresholdCasesSecond;
+    while( j<=size(data,2))
+        difference = movingAverage(j-199) - threshold;
         if(~startFound)
             if( difference>0 )
                 startFound = true;
@@ -27,8 +34,6 @@ function [startSecondWave,endSecondWave] = Group42Exe1Fun2(cases)
         j = j + 1;
     end
     if(~endFound)
-        endSecondWave = size(cases,2);
+        endSecondWave = size(data,2);
     end
-    
-    
 end

@@ -1,15 +1,21 @@
-function [startFirstWave,endFirstWave] = Group42Exe1Fun1(cases)
+function [startFirstWave,endFirstWave] = Group21Exe1Fun1(data)
     % This function is used to find the start and end of the first wave
-    totalNumberOfCasesFirstWave = sum(cases(1:200));
+    % We define a threshold. The first wave starts when the moving average 
+    % of the data first surpasses the threshold and ends when the moving
+    % average subceeds it.
 
-    thresholdCasesFirst = 0.0019485*totalNumberOfCasesFirstWave;
+    % Observing the data, we assume that the first wave ended before day number 200
+    totalNumberOfDataFirstWave = sum(data(1:200));
+
+    % The first wave threshold that resulted from experimentation
+    threshold = 0.0019485*totalNumberOfDataFirstWave;
 
     % Find 1st wave
-    casesMovingAverage = movmean(cases,7);
+    movingAverage = movmean(data,7);
     startFound = false;
     j = 1;
     while(j<=200)
-        difference = casesMovingAverage(j) - thresholdCasesFirst;
+        difference = movingAverage(j) - threshold;
         if(~startFound)
             if( difference>0 )
                 startFound = true;
@@ -25,6 +31,4 @@ function [startFirstWave,endFirstWave] = Group42Exe1Fun1(cases)
         end
         j = j+1;
     end
-
-
 end
