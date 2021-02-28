@@ -1,3 +1,6 @@
+% Nikos Kaparinos 9245
+% Vasiliki Zarkadoula 9103
+
 function bestDistribution = Group21Exe3Fun3(data,distributions)
 % This function finds the distrubition that fits best the data based on MSE
 

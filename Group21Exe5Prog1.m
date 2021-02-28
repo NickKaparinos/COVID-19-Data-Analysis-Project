@@ -87,7 +87,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
-    plot(1+t:n,Ypred,"LineWidth",2,"Color","m");
+    plot(1+t:n,Ypred,"LineWidth",2,"Color","r");
     title("Deaths in " + countryList(i) +" and optimal normal linear regression (t=" + t + ")"); 
     legend("Deaths","Deaths 7-Day moving average","Optimal Normal Linear regression");
     xlabel("Days")

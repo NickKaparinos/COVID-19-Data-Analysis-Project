@@ -10,7 +10,7 @@ clear;
 % Closest European country -> 55, Greece
 country = "Greece";
 
-% Read cases and deaths from data files
+% Read cases and deaths
 [cases,deaths,~] = Group21Exe1Fun3(country);
 % Start and end of the first Covid-19 wave
 [start1,end1] = Group21Exe1Fun1(cases);

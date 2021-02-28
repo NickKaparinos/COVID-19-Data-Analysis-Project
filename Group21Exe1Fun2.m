@@ -1,3 +1,6 @@
+% Nikos Kaparinos 9245
+% Vasiliki Zarkadoula 9103
+
 function [startSecondWave,endSecondWave] = Group21Exe1Fun2(data)
     % This function is used to find the start and end of the second wave
     % We define a threshold. The second wave starts when the moving average 

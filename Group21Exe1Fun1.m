@@ -1,3 +1,6 @@
+% Nikos Kaparinos 9245
+% Vasiliki Zarkadoula 9103
+
 function [startFirstWave,endFirstWave] = Group21Exe1Fun1(data)
     % This function is used to find the start and end of the first wave
     % We define a threshold. The first wave starts when the moving average 

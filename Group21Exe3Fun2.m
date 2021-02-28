@@ -1,3 +1,6 @@
+% Nikos Kaparinos 9245
+% Vasiliki Zarkadoula 9103
+
 function [meanCI,bootMeanCI] = Group21Exe3Fun2(timeInterval,t0,B,alpha)
 % This function calculates and returns the parametric and bootstrap 
 % confidence intervals

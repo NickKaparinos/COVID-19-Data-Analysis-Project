@@ -62,8 +62,8 @@ for i = 1:length(countryList)
     ylabel('Daily Cases - Daily Deaths')
     legend('Cases','Deaths')
     title('3-day moving average of cases and deaths of ' + countryList(i));
-    annotation('textbox',[.69 .73 .2 .08],'String',['time lag = ' num2str(timeLag(i))],'BackgroundColor','white')
-    hold off
+    annotation('textbox',[.69 .73 .2 .08],'String',['time lag = ' num2str(timeLag(i))],'BackgroundColor','white');
+    hold off;
 end
 
 % Time interval results from exercise 3

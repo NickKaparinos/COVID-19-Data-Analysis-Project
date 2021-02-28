@@ -1,3 +1,6 @@
+% Nikos Kaparinos 9245
+% Vasiliki Zarkadoula 9103
+
 function [cases,deaths,population] = Group21Exe1Fun3(countryName)
     % This function reads the data for a specific country
 

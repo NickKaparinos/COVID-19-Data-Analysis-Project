@@ -109,19 +109,19 @@ for i = 1:length(countryList)
     [b,~,~,model,stats] = stepwisefit(X,Y,'Display','off');
     b0 = stats.intercept;
     b = [b0; b(model)];
-    k = length(b) - 1;
+    stepwiseNumberOfVariables(i) = length(b) - 1;
 
     Ypred = [ones(length(X),1) X(:,model)]*b;
     YpredStep = Ypred;
     
     % Save R2 and adjR2
     R2Array(i,3) = (1-stats.SSresid/stats.SStotal);
-    AdjR2Array(i,3) = adjRsq(Ypred,Y,length(Y),k);
-    stepwiseNumberOfVariables(i) = length(b) - 1;
+    AdjR2Array(i,3) = adjRsq(Ypred,Y,length(Y),stepwiseNumberOfVariables(i));
+
     
     % Diagnostic plot of standardised error
     error = Y - Ypred;
-    se = sqrt( 1/(length(X)-k-1) * (sum(error.^2)));
+    se = sqrt( 1/(length(X)-stepwiseNumberOfVariables(i)-1) * (sum(error.^2)));
     ei_standard = error./se;
     subplot(3,1,j)
     scatter(Y,ei_standard);
@@ -149,7 +149,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
-    plot(1+t:n,YpredNormal,"LineWidth",1.5,"Color","m");
+    plot(1+t:n,YpredNormal,"LineWidth",1.5,"Color","r");
     title("Deaths in " + countryList(i) +" and optimal normal linear regression (t=" + t + ")");
     legend("Deaths","Deaths 7-Day moving average","Optimal Normal Linear regression");
     
@@ -158,7 +158,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deaths),movmean(deaths,7),"--");
     hold on;
-    plot(21:n,YpredFull,"LineWidth",1.5,"Color","c");
+    plot(21:n,YpredFull,"LineWidth",1.5,"Color","b");
     title("Deaths in " + countryList(i) +" and full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
     

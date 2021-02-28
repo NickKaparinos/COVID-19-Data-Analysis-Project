@@ -17,7 +17,7 @@ distribution = 'Gamma';
 mseCases = zeros(length(countryList),1);
 mseDeaths = zeros(length(countryList),1);
 for i = 1:length(countryList)
-    % Read cases and deaths from data files
+    % Read cases and deaths
     [cases,deaths,~] = Group21Exe1Fun3(countryList(i));
     % Replace "_" because it is used for subscripts in plot titles
     countryList(i) = strrep(countryList(i),"_"," "); 

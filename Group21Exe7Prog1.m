@@ -133,7 +133,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
-    plot(21:n2,YpredFull,"LineWidth",1.5,"Color","m");
+    plot(21:n2,YpredFull,"LineWidth",1.5,"Color","b");
     title("Second wave deaths in " + countryList(i) +" and full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Full Linear Regression");
     xlabel("Days")
@@ -145,7 +145,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
-    plot(21:n2,YpredFullNorm,"LineWidth",1.5,"Color","c");
+    plot(21:n2,YpredFullNorm,"LineWidth",1.5,"Color","r");
     title("Second wave deaths in " + countryList(i) +" and normalised full linear regression ");
     legend("Deaths","Deaths 7-Day moving average","Normalised Full Linear Regression");
     xlabel("Days")
@@ -159,7 +159,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
-    plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
+    plot(21:n2,YpredStep,"LineWidth",1.5,"Color","b")
     title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
     xlabel("Days")
@@ -171,7 +171,7 @@ for i = 1:length(countryList)
     hold on;
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
-    plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
+    plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","r")
     title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
     xlabel("Days")
