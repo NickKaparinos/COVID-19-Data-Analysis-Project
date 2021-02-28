@@ -298,7 +298,7 @@ tablesLASSO = cell(length(countryList));
 tablesPLS = cell(length(countryList));
 for i = 1:length(countryList)
     tablesFullRegression{i} = table([R2Training(i,1);R2Test(i,1)],[AdjR2Training(i,1);AdjR2Test(i,1)],[R2Training(i,2);R2Test(i,2)],[AdjR2Training(i,2);AdjR2Test(i,2)],'VariableNames',{'R2','AdjR2','Normalization_R2','Normalization_AdjR2'},'RowName',{'Training Set','Test Set'});
-    tablesStepwiseRegression{i} = table([R2Training(i,3);R2Test(i,3)],[AdjR2Training(i,3);AdjR2Test(i,3)],[R2Training(i,4);AdjR2Test(i,4)],[R2Training(i,4);AdjR2Test(i,4)],'VariableNames',{'R2','AdjR2','Normalization_R2','Normalization_AdjR2'},'RowName',{'Training Set','Test Set'});
+    tablesStepwiseRegression{i} = table([R2Training(i,3);R2Test(i,3)],[AdjR2Training(i,3);AdjR2Test(i,3)],[R2Training(i,4);R2Test(i,4)],[AdjR2Training(i,4);AdjR2Test(i,4)],'VariableNames',{'R2','AdjR2','Normalization_R2','Normalization_AdjR2'},'RowName',{'Training Set','Test Set'});
     tablesLASSO{i} = table([R2Training(i,5); R2Test(i,5)],[AdjR2Training(i,5); AdjR2Test(i,5)],'VariableNames',{'R2','AdjR2'},'RowName',{'Training Set','Test Set'});
     tablesPLS{i} = table([R2Training(i,6); R2Test(i,6)],[AdjR2Training(i,6); AdjR2Test(i,6)],'VariableNames',{'R2','AdjR2'},'RowName',{'Training Set','Test Set'});
 end

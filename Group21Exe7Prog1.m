@@ -12,11 +12,12 @@ adjRsq = @(ypred,y,n,k) ( 1 - (n-1)/(n-1-k)*sum((ypred-y).^2)/sum((y-mean(y)).^2
 
 % Selected Countries
 countryList = ["Greece","Belgium","Italy","France","Germany","Netherlands","United_Kingdom"];
+
 R2Training = zeros(length(countryList),4);
 AdjR2Training = zeros(length(countryList),4);
 R2Test = zeros(length(countryList),4);
 AdjR2Test = zeros(length(countryList),4);
-stepwiseNumberOfVariables = zeros(length(countryList),2);
+stepwiseNumberOfVariables = zeros(length(countryList));
 
 for i = 1:length(countryList)
     %%% First Wave %%%
@@ -61,11 +62,11 @@ for i = 1:length(countryList)
     [bStep,~,~,modelStep,stats] = stepwisefit(X,Y,'Display','off');
     bStep = [stats.intercept; bStep(modelStep)];
     YpredStep = [ones(length(X),1) X(:,modelStep)]*bStep;
+    stepwiseNumberOfVariables(i) = length(bStep) - 1;
     
     % Training R2 and adjR2
     R2Training(i,3) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),length(bStep)-1);
-    stepwiseNumberOfVariables(i,1) = length(bStep) - 1;
+    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i));
     
     % Normalised Stepwise regression
     [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y,'Display','off');
@@ -74,8 +75,7 @@ for i = 1:length(countryList)
     
     % Training R2 and adjR2
     R2Training(i,4) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),length(bStepNorm)-1);
-    stepwiseNumberOfVariables(i,2) = length(bStepNorm) - 1;
+    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i));
     
     %%% Second wave %%%
     % Find the start and end of the second wave using Group21Exe1Fun2
@@ -113,14 +113,14 @@ for i = 1:length(countryList)
     
     % Save testing R2 and adjR2
     R2Test(i,3) = Rsq(YpredStep,Y);
-    AdjR2Test(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i,1));
+    AdjR2Test(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i));
     
     % Normalised Step wise regression
     YpredStepNorm = [ones(length(Xnorm),1) Xnorm(:,modelStepNorm)]*bStepNorm;
     
     % Save R2 and adjR2
     R2Test(i,4) = Rsq(YpredStepNorm,Y);
-    AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i,2));
+    AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i));
     
     
     % Plot second wave deaths and full linear regression
@@ -160,7 +160,7 @@ for i = 1:length(countryList)
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
     plot(21:n2,YpredStep,"LineWidth",1.5,"Color","m")
-    title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i,1) + " variables)");
+    title("Second wave deaths in " + countryList(i) +" and stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Stepwise Regression");
     xlabel("Days")
     ylabel("Deaths")
@@ -172,7 +172,7 @@ for i = 1:length(countryList)
     plot(1:length(deathsSecondWave),movmean(deathsSecondWave,7),"--");
     hold on;
     plot(21:n2,YpredStepNorm,"LineWidth",1.5,"Color","c")
-    title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i,2) + " variables)");
+    title("Second wave deaths in " + countryList(i) +" and normalised stepwise regression (" + stepwiseNumberOfVariables(i) + " variables)");
     legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
     xlabel("Days")
     ylabel("Deaths")
