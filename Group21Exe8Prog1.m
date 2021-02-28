@@ -1,6 +1,6 @@
 % Data Analysis Project 2020-2021
 % Nikos Kaparinos 9245
-% Vasiliki Zarkadoul 9103
+% Vasiliki Zarkadoula 9103
 % Exercise 8: Regression second wave and feature selection
 close all;
 clc;
@@ -13,6 +13,7 @@ adjRsq = @(ypred,y,n,k) ( 1 - (n-1)/(n-1-k)*sum((ypred-y).^2)/sum((y-mean(y)).^2
 % Selected Countries
 countryList = ["Greece","Belgium","Italy","France","Germany","Netherlands","United_Kingdom"];
 PLSNormalisationType = ["range","range","range","range","range","zscore","range"];
+
 R2Training = zeros(length(countryList),6);
 AdjR2Training = zeros(length(countryList),6);
 R2Test = zeros(length(countryList),6);
@@ -21,14 +22,13 @@ stepwiseNumberOfVariables = zeros(length(countryList));
 
 
 % LASSO
-lambda = 1:100;
-bLASSOArray = zeros(length(countryList),length(lambda),22);
+bLASSOArray = zeros(length(countryList),100,22);
 
-R2LASSOTraining = zeros(length(countryList),length(lambda));
-AdjR2LASSOTraining = zeros(length(countryList),length(lambda));
+R2LASSOTraining = zeros(length(countryList),100);
+AdjR2LASSOTraining = zeros(length(countryList),100);
 
-R2LASSOTest = zeros(length(countryList),length(lambda));
-AdjR2LASSOTest = zeros(length(countryList),length(lambda));
+R2LASSOTest = zeros(length(countryList),100);
+AdjR2LASSOTest = zeros(length(countryList),100);
 
 % PLS
 numberOfComponents = 1:21;
@@ -54,7 +54,7 @@ for i = 1:1:length(countryList)
     
     % Full Linear Regression Model
     X = zeros(n1-20,21);
-    for t = 0:20                                            % Create X varibales based on all 21 delays
+    for t = 0:20                                            % Create X variables based on all 21 delays
         X(:,t+1) = casesFirstWave(1+t:n1-20+t);
     end
     Xinput = [ones(n1-20,1) X];
@@ -68,7 +68,7 @@ for i = 1:1:length(countryList)
     R2Training(i,1) = Rsq(YpredFull,Y);
     AdjR2Training(i,1) = adjRsq(YpredFull,Y,length(Y),k);
     
-    % Normalised Full Linear Regression Model %
+    % Normalised Full Linear Regression Model
     Xnorm = normalize(X,'range');
     Xinput = [ones(n1-20,1) Xnorm];
     Y = deathsFirstWave(21:n1);
@@ -85,10 +85,11 @@ for i = 1:1:length(countryList)
     bStep = [stats.intercept; bStep(modelStep)];
     YpredStep = [ones(length(X),1) X(:,modelStep)]*bStep;
     
+    stepwiseNumberOfVariables(i) = length(bStep) - 1;
+    
     % Training R2 and adjR2
     R2Training(i,3) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),length(bStep)-1);
-    stepwiseNumberOfVariables(i) = length(bStep) - 1;
+    AdjR2Training(i,3) = adjRsq(YpredStep,Y,length(Y),stepwiseNumberOfVariables(i));
     
     % Normalised Stepwise regression
     [bStepNorm,~,~,modelStepNorm,stats] = stepwisefit(Xnorm,Y,'Display','off');
@@ -97,37 +98,34 @@ for i = 1:1:length(countryList)
     
     % Training R2 and adjR2
     R2Training(i,4) = 1 - stats.SSresid/stats.SStotal;
-    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),length(bStepNorm)-1);
+    AdjR2Training(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i));
     
     % LASSO
     [bLASSO,info] = lasso(Xnorm,Y);
        
-    for l = 1:100
-        bLASSOTemp = bLASSO(:,i);
-        %b0 = mean(Y) - mean(X)*bLASSOTemp;
-        %b0 = mean(Y);
-        %b0 = 0;
-        b0 = info.Intercept(i);
+    for w = 1:100
+        bLASSOTemp = bLASSO(:,w);
+        b0 = info.Intercept(w);
         bLASSOTemp = [b0; bLASSOTemp];
         YpredLASSO = [ones(length(X),1) Xnorm]*bLASSOTemp;
         
-        bLASSOArray(i,l,:) = bLASSOTemp;
+        bLASSOArray(i,w,:) = bLASSOTemp;
 
         % Training R2 and AdjR2
-        R2LASSOTraining(i,l) = Rsq(YpredLASSO,Y);
-        AdjR2LASSOTraining(i,l) = adjRsq(YpredLASSO,Y,length(Y),length(bLASSOTemp));
+        R2LASSOTraining(i,w) = Rsq(YpredLASSO,Y);
+        AdjR2LASSOTraining(i,w) = adjRsq(YpredLASSO,Y,length(Y),length(bLASSOTemp));
     end
     
     % PLS
-    for l = 1:length(numberOfComponents)
-        [~,~,~,~,bPLS,~] = plsregress(normalize(X,PLSNormalisationType(i)),Y,numberOfComponents(l));
+    for w = 1:length(numberOfComponents)
+        [~,~,~,~,bPLS,~] = plsregress(normalize(X,PLSNormalisationType(i)),Y,numberOfComponents(w));
         YpredPLS = [ones(length(X),1) normalize(X,PLSNormalisationType(i))]*bPLS;
         
-        bPLSArray(i,l,:) = bPLS;
+        bPLSArray(i,w,:) = bPLS;
         
         % Training R2 and AdjR2
-        R2PLSTraining(i,l) = Rsq(YpredPLS,Y);
-        AdjR2PLSTraining(i,l) = adjRsq(YpredPLS,Y,length(Y),numberOfComponents(i));
+        R2PLSTraining(i,w) = Rsq(YpredPLS,Y);
+        AdjR2PLSTraining(i,w) = adjRsq(YpredPLS,Y,length(Y),numberOfComponents(w));
     end
     
     %%% Second wave %%%
@@ -176,17 +174,16 @@ for i = 1:1:length(countryList)
     AdjR2Test(i,4) = adjRsq(YpredStepNorm,Y,length(Y),stepwiseNumberOfVariables(i));
     
     % LASSO
-    for l = 1:100
-        %bTemp = zeros(size(X,2),1);
-        bTemp = bLASSOArray(i,l,:);
+    for w = 1:100
+        bTemp = bLASSOArray(i,w,:);
         bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
         YpredLASSO =  [ones(length(X),1) Xnorm]*bTemp;
         
-        R2LASSOTest(i,l) = Rsq(YpredLASSO,Y);
-        AdjR2LASSOTest(i,l) = adjRsq(YpredLASSO,Y,length(Y),length(bTemp));
+        R2LASSOTest(i,w) = Rsq(YpredLASSO,Y);
+        AdjR2LASSOTest(i,w) = adjRsq(YpredLASSO,Y,length(Y),length(bTemp));
     end
     
-    % Find optimal LASSO model and save metrics
+    % Find the optimal LASSO model and save metrics
     [maximum,argMax] = max( AdjR2LASSOTest(i,:) );
     optimalLambda = info.Lambda(argMax);
     AdjR2Test(i,5) = maximum;
@@ -195,21 +192,22 @@ for i = 1:1:length(countryList)
     AdjR2Training(i,5) = AdjR2LASSOTraining(i,argMax);
     R2Training(i,5) = R2LASSOTraining(i,argMax);
     
+    % Optimal LASSO model prediction
     bTemp = bLASSOArray(i,argMax,:);
     bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
     YpredLASSO =  [ones(length(X),1) Xnorm]*bTemp;
     
     % PLS
-    for l = 1:length(numberOfComponents)
-        bTemp = bPLSArray(i,l,:);
+    for w = 1:length(numberOfComponents)
+        bTemp = bPLSArray(i,w,:);
         bTemp = reshape(bTemp,[size(bTemp,3),1,1]);
         YpredPLS =  [ones(length(X),1) normalize(X,PLSNormalisationType(i))]*bTemp;
         
-        R2PLSTest(i,l) = Rsq(YpredPLS,Y);
-        AdjR2PLSTest(i,l) = adjRsq(YpredPLS,Y,length(Y),numberOfComponents(i));
+        R2PLSTest(i,w) = Rsq(YpredPLS,Y);
+        AdjR2PLSTest(i,w) = adjRsq(YpredPLS,Y,length(Y),numberOfComponents(w));
     end
     
-    % Find optimal PLS model and save metrics
+    % Find the optimal PLS model and save metrics
     [maximum,argMax] = max( AdjR2PLSTest(i,:) );
     optimalNumComponets = argMax;
     AdjR2Test(i,6) = maximum;
@@ -225,21 +223,20 @@ for i = 1:1:length(countryList)
     
     % Comparison Plot of PLS models
     figure;
-%     subplot(1,2,1);
+    subplot(1,2,1);
     plot(numberOfComponents,AdjR2PLSTest(i,:));
-    title("PLS models Adjusted R^2 in test set")
+    title(countryList(i) + ": PLS models Adjusted R^2 in the test set")
     xlabel("Number of components")
     ylabel("Adjusted R2")
     
-%     % Comparison Plot of LASSO models
-%     subplot(1,2,2);
-%     plot(info.Lambda',AdjR2LASSOTest(i,:)');
-%     title("LASSO models Adjusted R^2 in the test set")
-%     xlabel("Lambda")
-%     ylabel("Adjusted R2")
-%     
+    % Comparison Plot of LASSO models
+    subplot(1,2,2);
+    plot(info.Lambda',AdjR2LASSOTest(i,:)');
+    title(countryList(i) + ": LASSO models Adjusted R^2 in the test set")
+    xlabel("Lambda")
+    ylabel("Adjusted R2")   
 
-    % Find the best regression and compare it to LASSO and PLS
+    % Find the best regression from exercise 7 and compare it to LASSO and PLS
     [~,bestRegression] = max(AdjR2Test(i,1:4));
 
     % Plot the best regression
@@ -272,7 +269,7 @@ for i = 1:1:length(countryList)
             legend("Deaths","Deaths 7-Day moving average","Normalised Stepwise Regression");
     end
 
-    % PLOT LASSO
+    % Plot LASSO
     subplot(1,3,2);
     plot(1:length(deathsSecondWave),deathsSecondWave);
     hold on;
@@ -282,7 +279,7 @@ for i = 1:1:length(countryList)
     title("Second wave deaths in " + countryList(i))
     legend("Deaths","Deaths 7-Day moving average","LASSO (lambda = " + num2str(optimalLambda) + ")");
 
-    % PLOT PLS
+    % Plot PLS
     subplot(1,3,3);
     plot(1:length(deathsSecondWave),deathsSecondWave);
     hold on;
@@ -325,8 +322,8 @@ end
 
 %%%%% Sumperasmata - Sxolia %%%%%%
 %
-% Se auto to zhthma xrhsimopoieisame tis methodous palindromhshs LASSO kai
-% PLS. Epeita, tis sugkriname me th methodo Stepwise kathws kai me to
+% Se auto to zhthma xrhsimopoioume tis methodous palindromhshs LASSO kai
+% PLS. Epeita, tis sugkrinoume me th methodo Stepwise kathws kai me to
 % plhres montelo palindromhshs.
 %
 % Parathrhthke to idio problhma me to zhthma 7 sto deutero kuma. Logw ths
@@ -338,4 +335,15 @@ end
 % upoloipa montela to beltisto eidos kanonikopoihshs htan panta h
 % kanonikopoihsh range.
 %
+% Apodeiknuetai oti h methodos PLS exei polu kalh apodosh. Sugekrimena,
+% einai h beltisth methodos palindromhshs se oles tis xwres, ektos apo thn
+% Ellada kai thn Ollandia, stis opoies uperterei h Stepwise kai h LASSO
+% antistoixa.
 %
+% Apo ta diagrammata sugkrishs twn PLS montelwn, einai aksioshmeiwto to
+% gegenos oti se oles tis xwres o beltistos arithmos components einai 1, me
+% eksairesh th Germania opou h apodosh auksanetai me ton arithmo
+% components.
+%
+% Enas problhmatismos mas opws sto zhthma 7 einai h xrhsh normalization
+% sta dedomena elegxou.
